@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>奶光镇 · NAIGWANG TOWN</title>
+  <meta name="description" content="牛奶纸盒的另一端，住着 8 位情绪治愈官。韩国天主教大学 AX 캐릭터디자인 课程作业。">
+  <meta name="theme-color" content="#FBF8F3">
+  <link rel="stylesheet" href="style.css">
+  <!-- 告诉 CSS「JS 已开启」，这样滚动淡入的元素才会先隐藏 -->
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body data-page="home">
+
+  <!-- ===================== 导航栏 ===================== -->
+  <header class="nav">
+    <div class="nav__inner">
+      <a class="nav__logo" href="index.html">奶光镇<small>NAIGWANG</small></a>
+      <button class="nav__toggle" aria-label="打开菜单" aria-expanded="false"><span></span><span></span></button>
+      <ul class="nav__links">
+        <!-- 带 is-soon 的是还没做好的页面，做好后删掉 is-soon 即可 -->
+        <li><a href="#world" class="is-soon">世界观</a></li>
+        <li><a href="#characters">角色</a></li>
+        <li><a href="#stickers" class="is-soon">表情包</a></li>
+        <li><a href="#team" class="is-soon">团队</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===================== 1. 开场：大标题 + 角色依次出场 ===================== -->
+    <section class="intro" id="intro">
+      <div class="intro__stage">
+        <div class="intro__glow"></div>
+
+        <div class="intro__title">
+          <p class="intro__en">NAIGWANG TOWN</p>
+          <h1 class="intro__h1">奶光镇</h1>
+          <p class="intro__sub">牛奶纸盒的另一端，有一座温柔的小镇。</p>
+        </div>
+
+        <div class="intro__caption">
+          <h2 class="headline">8 位情绪治愈官</h2>
+          <p class="lead">在你最崩溃的三秒钟，陪着你。</p>
+        </div>
+
+        <!-- 8 个角色由 script.js 自动生成 -->
+        <ul class="intro__cast" id="cast"></ul>
+
+        <div class="intro__hint">向下滚动</div>
+      </div>
+    </section>
+
+    <!-- ===================== 2. 一句话介绍 ===================== -->
+    <section class="section statement">
+      <div class="container">
+        <span class="eyebrow" data-reveal style="--c-deep: var(--tea)">关于奶光镇</span>
+        <p class="headline" data-scrub-text>当一个人情绪耗尽、独自喝完最后一口牛奶时，纸盒会在那一刻发光。</p>
+        <p class="lead" data-reveal>光把人的「情绪碎片」悄悄吸进纸盒，纸盒内侧连通奶光镇。第二天，喝奶的人不会记得，<strong>但镇上会多出一点点温度。</strong></p>
+      </div>
+    </section>
+
+    <!-- ===================== 3. 角色墙 ===================== -->
+    <section class="section" id="characters" style="padding-top:0">
+      <div class="container--wide">
+        <div class="container">
+          <span class="eyebrow" data-reveal style="--c-deep: var(--tea)">居民</span>
+          <h2 class="headline" data-reveal style="--d:.08s">认识一下，<br>镇上的八位居民。</h2>
+          <p class="lead" data-reveal style="--d:.16s">一种小动物 ＋ 一种与情绪有关的奇怪体质。原因不解释。</p>
+        </div>
+        <!-- 8 张卡片由 script.js 自动生成 -->
+        <div class="wall" id="wall"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== 页脚 ===================== -->
+  <footer class="footer">
+    <div class="container">
+      <span>奶光镇 · NAIGWANG TOWN</span>
+      <span>가톨릭대학교 · AX 캐릭터디자인 · Week 8 팀 발표</span>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

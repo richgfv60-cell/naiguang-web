@@ -1,0 +1,909 @@
+/* ==========================================================================
+   奶光镇 · 全站样式
+   --------------------------------------------------------------------------
+   小提示：
+   - 想改全站颜色，改下面 :root 里的变量即可
+   - 角色页的主色（--c-tint / --c-deep）由 script.js 根据角色数据自动设置
+   - 所有动画只用 transform 和 opacity，保证顺滑
+   ========================================================================== */
+
+:root {
+  /* —— 全站基础色 —— */
+  --bg: #FBF8F3;          /* 页面底色：奶白 */
+  --bg-2: #F3EDE4;        /* 次级底色 */
+  --ink: #1D1D1F;         /* 主文字色 */
+  --ink-2: #6E6E73;       /* 次要文字色 */
+  --ink-3: #A1A1A6;       /* 更弱的文字色 */
+  --milk: #F4E5CA;        /* 统一道具色：奶白 */
+  --tea: #AA6D6C;         /* 统一道具色：奶茶棕 */
+  --line: rgba(0, 0, 0, .08);
+
+  /* —— 角色主色（角色页会被 JS 覆盖） —— */
+  --c-tint: #F2D6CC;      /* 浅色：背景渐变用 */
+  --c-deep: #8D4635;      /* 深色：标题、强调色 */
+
+  /* —— 字体：优先使用系统自带字体，无需下载，打开更快 —— */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Source Han Sans SC",
+          "Microsoft YaHei", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+
+  /* —— 动画曲线（接近苹果官网的缓动） —— */
+  --ease: cubic-bezier(.22, .61, .36, 1);
+
+  --nav-h: 52px;          /* 导航栏高度 */
+  --gutter: 22px;         /* 页面左右留白 */
+}
+
+/* ---------- 基础重置 ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;       /* 用 clip 而不是 hidden，才不会让吸顶效果失效 */
+}
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3, p { margin: 0; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+::selection { background: var(--c-tint); }
+
+/* ==========================================================================
+   导航栏：吸顶 + 半透明毛玻璃
+   ========================================================================== */
+.nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: var(--nav-h);
+  z-index: 100;
+  background: rgba(251, 248, 243, .72);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--line);
+}
+.nav__inner {
+  max-width: 1080px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav__logo {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+.nav__logo small {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  color: var(--ink-2);
+}
+.nav__links {
+  display: flex;
+  gap: 32px;
+  font-size: 13px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nav__links a {
+  opacity: .8;
+  transition: opacity .3s;
+}
+.nav__links a:hover,
+.nav__links a[aria-current="page"] { opacity: 1; }
+/* 还没做好的页面：变淡、不可点 */
+.nav__links a.is-soon { opacity: .3; pointer-events: none; }
+
+/* 手机端的菜单按钮（电脑端隐藏） */
+.nav__toggle {
+  display: none;
+  width: 44px;
+  height: 44px;
+  margin-right: -12px;
+  position: relative;
+}
+.nav__toggle span {
+  position: absolute;
+  left: 13px;
+  width: 18px;
+  height: 1.5px;
+  background: var(--ink);
+  border-radius: 1px;
+  transition: transform .35s var(--ease);
+}
+.nav__toggle span:first-child { top: 18px; }
+.nav__toggle span:last-child { top: 25px; }
+.nav.is-open .nav__toggle span:first-child { transform: translateY(3.5px) rotate(45deg); }
+.nav.is-open .nav__toggle span:last-child { transform: translateY(-3.5px) rotate(-45deg); }
+
+@media (max-width: 733px) {
+  .nav__toggle { display: block; }
+  .nav__links {
+    position: fixed;
+    top: var(--nav-h);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 0;
+    padding: 12px var(--gutter) 28px;
+    background: rgba(251, 248, 243, .96);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--line);
+    font-size: 24px;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity .3s var(--ease), transform .3s var(--ease);
+  }
+  .nav__links a { display: block; padding: 10px 0; }
+  .nav.is-open .nav__links { opacity: 1; transform: none; pointer-events: auto; }
+}
+
+/* ==========================================================================
+   通用排版
+   ========================================================================== */
+.section {
+  position: relative;
+  padding: clamp(96px, 16vh, 180px) var(--gutter);
+}
+.container { max-width: 980px; margin: 0 auto; }
+.container--wide { max-width: 1180px; margin: 0 auto; }
+.center { text-align: center; }
+
+/* 小标题（标题上方的一行彩色小字） */
+.eyebrow {
+  display: block;
+  margin-bottom: 14px;
+  font-size: clamp(15px, 1.4vw, 19px);
+  font-weight: 600;
+  color: var(--c-deep);
+}
+/* 超大标题 */
+.headline {
+  font-size: clamp(40px, 7vw, 88px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -.01em;
+  text-wrap: balance;
+}
+/* 引导段落（较大、偏灰的正文） */
+.lead {
+  margin-top: 24px;
+  font-size: clamp(19px, 2vw, 26px);
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.lead strong { color: var(--ink); font-weight: 600; }
+
+/* ==========================================================================
+   滚动淡入（由 script.js 在元素进入屏幕时加上 .is-in）
+   只有 JS 正常运行时（html.js）才先隐藏，保证没有 JS 也能看到内容
+   ========================================================================== */
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 40px, 0);
+  transition: opacity 1.1s var(--ease), transform 1.1s var(--ease);
+  transition-delay: var(--d, 0s);
+}
+html.js [data-reveal="scale"] { transform: scale(.94); }
+html.js [data-reveal].is-in { opacity: 1; transform: none; }
+
+/* 随滚动「逐字点亮」的文字 */
+.scrub-text .ch { opacity: .18; }
+
+/* ==========================================================================
+   首页 · 开场（吸顶舞台 + 角色依次出场）
+   ========================================================================== */
+.intro {
+  position: relative;
+  height: 420vh;              /* 越高，滚动出场越慢 */
+}
+.intro__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+/* 舞台中央那团柔和的「奶光」 */
+.intro__glow {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 140vmax;
+  height: 140vmax;
+  margin: -70vmax 0 0 -70vmax;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFFFFF 0%, rgba(244, 229, 202, .85) 22%, rgba(231, 183, 169, .25) 40%, rgba(251, 248, 243, 0) 62%);
+  will-change: transform, opacity;
+}
+.intro__title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 var(--gutter) 6vh;
+  will-change: transform, opacity;
+}
+.intro__en {
+  font-size: clamp(11px, 1.1vw, 14px);
+  font-weight: 600;
+  letter-spacing: .5em;
+  margin-right: -.5em;
+  color: var(--tea);
+}
+.intro__h1 {
+  margin: 18px 0 22px;
+  font-size: clamp(88px, 17vw, 230px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: .04em;
+  margin-right: -.04em;
+  background: linear-gradient(180deg, #4A302A 10%, #AA6D6C 95%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.intro__sub {
+  font-size: clamp(17px, 2vw, 24px);
+  font-weight: 400;
+  color: var(--ink-2);
+}
+/* 打开页面时标题的入场动画 */
+html.js .intro__title > * {
+  opacity: 0;
+  animation: rise 1.4s var(--ease) forwards;
+}
+html.js .intro__title > :nth-child(2) { animation-delay: .15s; }
+html.js .intro__title > :nth-child(3) { animation-delay: .35s; }
+@keyframes rise {
+  from { opacity: 0; transform: translate3d(0, 30px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* 开场结束时出现的说明文字 */
+.intro__caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--nav-h) + 9vh);
+  padding: 0 var(--gutter);
+  text-align: center;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.intro__caption .lead { margin-top: 14px; }
+
+/* 8 个角色站成一排 */
+.intro__cast {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(36px, 8vh, 96px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: clamp(4px, 1.6vw, 28px);
+  padding: 0 16px;
+  list-style: none;
+  margin: 0;
+}
+.cast__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  will-change: transform, opacity;
+}
+html.js .cast__item { opacity: 0; }
+.cast__item img {
+  height: clamp(96px, min(22vh, 10vw), 240px);
+  width: auto;
+  filter: drop-shadow(0 18px 24px rgba(141, 70, 53, .12));
+}
+.cast__item span {
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+/* 「向下滚动」提示 */
+.intro__hint {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  font-size: 12px;
+  letter-spacing: .2em;
+  color: var(--ink-3);
+}
+.intro__hint::after {
+  content: "";
+  display: block;
+  width: 1px;
+  height: 28px;
+  margin: 10px auto 0;
+  background: linear-gradient(var(--ink-3), transparent);
+  animation: hint 1.8s var(--ease) infinite;
+}
+@keyframes hint {
+  0%   { transform: scaleY(0); transform-origin: top; }
+  50%  { transform: scaleY(1); transform-origin: top; }
+  51%  { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+/* 手机：角色排成两排，每排 4 个 */
+@media (max-width: 733px) {
+  .intro { height: 380vh; }
+  .intro__cast {
+    flex-wrap: wrap;
+    row-gap: 18px;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .cast__item { width: calc(25% - 8px); }
+  .cast__item img { height: clamp(72px, 13vh, 130px); }
+  .cast__item span { font-size: 12px; margin-top: 6px; }
+  .intro__caption { top: calc(var(--nav-h) + 6vh); }
+}
+
+/* ==========================================================================
+   首页 · 一句话介绍
+   ========================================================================== */
+.statement .headline { max-width: 15em; }
+.statement .lead { max-width: 34em; }
+
+/* ==========================================================================
+   首页 · 角色墙
+   ========================================================================== */
+.wall {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-top: clamp(48px, 8vh, 80px);
+}
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 28px;
+  padding: 28px 24px 26px;
+  min-height: 380px;
+  overflow: hidden;
+  background: linear-gradient(170deg, var(--c-tint) 0%, #FFFFFF 115%);
+  transition: transform .6s var(--ease), box-shadow .6s var(--ease);
+}
+.card__no {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  color: var(--c-deep);
+  opacity: .7;
+}
+.card__name { margin-top: 6px; font-size: 28px; font-weight: 700; }
+.card__role { font-size: 14px; color: var(--ink-2); }
+.card__img {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-top: 18px;
+}
+.card__img img {
+  height: 190px;
+  width: auto;
+  transition: transform .7s var(--ease);
+}
+.card__more {
+  margin-top: 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-deep);
+}
+.card__more::after { content: " ›"; }
+.card.is-soon .card__more { color: var(--ink-3); }
+.card.is-soon .card__more::after { content: ""; }
+a.card:hover { transform: translateY(-6px); box-shadow: 0 24px 48px -20px rgba(141, 70, 53, .35); }
+a.card:hover .card__img img { transform: scale(1.05) translateY(-4px); }
+
+@media (max-width: 1068px) { .wall { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) {
+  .wall { gap: 12px; }
+  .card { min-height: 280px; padding: 20px 16px; border-radius: 22px; }
+  .card__name { font-size: 22px; }
+  .card__role { font-size: 12px; }
+  .card__img img { height: 130px; }
+}
+
+/* ==========================================================================
+   页脚
+   ========================================================================== */
+.footer {
+  padding: 40px var(--gutter) 56px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.footer .container { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+
+/* ==========================================================================
+   角色详情页
+   ========================================================================== */
+/* 整页背景：角色主色 → 奶白 的渐变 */
+body.page-character {
+  background:
+    linear-gradient(180deg, var(--c-tint) 0, var(--bg) 160vh, var(--bg) 100%);
+}
+
+/* —— 1. 首屏（吸顶舞台：名字退场、立绘放大、台词出现） —— */
+.ch-hero { position: relative; height: 230vh; }
+.ch-hero__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+.ch-hero__text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--nav-h) + 6vh);
+  text-align: center;
+  padding: 0 var(--gutter);
+  will-change: transform, opacity;
+}
+.ch-hero__name {
+  font-size: clamp(96px, 19vw, 260px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: .02em;
+  color: var(--c-deep);
+}
+.ch-hero__img {
+  position: absolute;
+  left: 50%;
+  bottom: -2vh;
+  height: 60vh;
+  width: auto;
+  max-width: none;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 30px 40px rgba(0, 0, 0, .10));
+  will-change: transform;
+}
+.ch-hero__quote {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--nav-h) + 10vh);
+  text-align: center;
+  padding: 0 var(--gutter);
+  font-size: clamp(30px, 5vw, 64px);
+  font-weight: 700;
+  line-height: 1.2;
+  text-wrap: balance;
+  color: var(--ink);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.ch-hero__quote small {
+  display: block;
+  margin-top: 16px;
+  font-size: clamp(14px, 1.3vw, 17px);
+  font-weight: 500;
+  color: var(--ink-2);
+}
+@media (max-width: 733px) {
+  .ch-hero__img { height: 54vh; }
+  .ch-hero__text { top: calc(var(--nav-h) + 4vh); }
+}
+
+/* 网页加载时首屏入场 */
+html.js .ch-hero__text > *,
+html.js .ch-hero__img { animation: rise 1.4s var(--ease) both; }
+html.js .ch-hero__text > :nth-child(2) { animation-delay: .1s; }
+html.js .ch-hero__text > :nth-child(3) { animation-delay: .2s; }
+html.js .ch-hero__img { animation-name: rise-img; animation-delay: .25s; }
+@keyframes rise-img {
+  from { opacity: 0; translate: 0 40px; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+/* —— 2. 性格（6 格信息表） —— */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: clamp(56px, 9vh, 96px);
+  border-top: 1px solid var(--line);
+}
+.fact {
+  padding: 28px 28px 32px 0;
+  border-bottom: 1px solid var(--line);
+}
+.fact__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.fact__value {
+  margin-top: 8px;
+  font-size: clamp(19px, 1.8vw, 24px);
+  font-weight: 600;
+  line-height: 1.4;
+}
+@media (max-width: 733px) {
+  .facts { grid-template-columns: 1fr; }
+  .fact { padding: 22px 0; }
+}
+
+/* —— 3. 永久缺陷（深色整屏） —— */
+.flaw {
+  background: var(--c-deep);
+  color: #FFF8EE;
+  padding-top: clamp(120px, 22vh, 240px);
+  padding-bottom: clamp(120px, 22vh, 240px);
+}
+.flaw .eyebrow { color: var(--milk); opacity: .75; }
+.flaw__text {
+  font-size: clamp(36px, 6.4vw, 84px);
+  font-weight: 700;
+  line-height: 1.22;
+  max-width: 13em;
+}
+.flaw__note {
+  margin-top: 48px;
+  max-width: 30em;
+  font-size: clamp(16px, 1.5vw, 19px);
+  color: rgba(255, 248, 238, .62);
+}
+
+/* —— 4. 专属动词（巨型文字随滚动放大） —— */
+.verb { overflow: hidden; }
+.verb__word {
+  display: block;
+  margin: 16px 0 8px;
+  /* 字号随字数自动缩小，保证「缩成一团」这种长词也能一行放下 */
+  font-size: min(26vw, 340px, calc(88vw / var(--len, 4)));
+  white-space: nowrap;
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--c-deep);
+  will-change: transform, opacity;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 36px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px 10px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .7);
+  border: 1px solid var(--line);
+  font-size: 15px;
+}
+.chip b {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--c-deep);
+  color: #fff;
+  font-size: 12px;
+}
+
+/* —— 5. 随身道具 —— */
+.item {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(32px, 6vw, 96px);
+}
+.item__visual {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 40px;
+  background: radial-gradient(circle at 50% 45%, #FFFFFF 0%, var(--milk) 45%, var(--c-tint) 100%);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+/* 道具的呼吸光晕（只动 opacity / transform） */
+.item__visual::before {
+  content: "";
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .95) 0%, rgba(255, 255, 255, 0) 70%);
+  animation: breathe 3.2s ease-in-out infinite;
+}
+.item__visual svg {
+  position: relative;
+  width: 42%;
+  height: auto;
+  filter: drop-shadow(0 12px 30px rgba(170, 109, 108, .35));
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(.85); opacity: .6; }
+  50%      { transform: scale(1.1); opacity: 1; }
+}
+.item .headline { font-size: clamp(34px, 4.6vw, 60px); }
+@media (max-width: 733px) { .item { grid-template-columns: 1fr; } }
+
+/* —— 6. 配色卡 —— */
+.swatches {
+  display: flex;
+  gap: 14px;
+  margin-top: clamp(48px, 8vh, 80px);
+}
+.swatch {
+  flex: 1;
+  text-align: left;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 0 var(--line), 0 20px 40px -28px rgba(0, 0, 0, .25);
+  transition: transform .5s var(--ease);
+}
+.swatch:hover { transform: translateY(-6px); }
+.swatch__color { height: clamp(140px, 24vh, 240px); }
+.swatch__info { padding: 14px 16px 18px; }
+.swatch__hex { font-size: 15px; font-weight: 600; letter-spacing: .04em; }
+.swatch__tip { font-size: 12px; color: var(--ink-3); }
+@media (max-width: 733px) {
+  .swatches { flex-wrap: wrap; gap: 10px; }
+  .swatch { flex: 1 1 calc(33.33% - 10px); border-radius: 18px; }
+  .swatch__color { height: 110px; }
+  .swatch__hex { font-size: 13px; }
+}
+
+/* —— 7. 三视图 —— */
+.turn {
+  margin-top: clamp(48px, 8vh, 80px);
+  border-radius: 32px;
+  background: #fff;
+  padding: clamp(28px, 5vw, 64px) clamp(16px, 4vw, 56px) 28px;
+  box-shadow: 0 30px 60px -40px rgba(0, 0, 0, .25);
+  will-change: transform;
+}
+.turn img { width: 100%; }
+.turn__labels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+/* —— 8. 精选表情（签名动作占大格） —— */
+.emotes {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-top: clamp(48px, 8vh, 80px);
+}
+.emote {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 24px;
+  background: #fff;
+  overflow: hidden;
+  text-align: left;
+  box-shadow: 0 1px 0 var(--line);
+  transition: transform .5s var(--ease), box-shadow .5s var(--ease);
+}
+.emote--sign { grid-column: span 2; grid-row: span 2; background: linear-gradient(160deg, #fff 0%, var(--c-tint) 140%); }
+.emote__pic {
+  flex: 1;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 14%;
+}
+.emote--sign .emote__pic { aspect-ratio: auto; }
+.emote__pic img { max-height: 100%; width: auto; }
+/* 还没上传表情图时的占位状态 */
+.emote.is-empty .emote__pic img { opacity: .22; filter: grayscale(1); }
+.emote.is-empty .emote__pic::after {
+  content: "表情图待上传";
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--bg-2);
+  font-size: 11px;
+  color: var(--ink-2);
+}
+.emote__info { padding: 0 18px 18px; }
+.emote__zh { font-size: 17px; font-weight: 700; }
+.emote--sign .emote__zh { font-size: clamp(22px, 2.4vw, 32px); }
+.emote__en { font-size: 13px; color: var(--ink-2); }
+.emote__tag {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg-2);
+  color: var(--ink-2);
+}
+.emote--sign .emote__tag { background: var(--c-deep); color: #fff; }
+button.emote:not(.is-empty):hover { transform: translateY(-4px); box-shadow: 0 20px 40px -24px rgba(0, 0, 0, .3); }
+button.emote.is-empty { cursor: default; }
+
+@media (max-width: 1068px) {
+  .emotes { grid-template-columns: repeat(3, 1fr); }
+  .emote--sign { grid-column: span 3; grid-row: auto; }
+  .emote--sign .emote__pic { aspect-ratio: 16 / 9; }
+}
+@media (max-width: 600px) {
+  .emotes { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .emote--sign { grid-column: span 2; }
+  .emote--sign .emote__pic { aspect-ratio: 4 / 3; }
+  .emote { border-radius: 18px; }
+}
+
+/* —— 9. 设计者 + 下一位 —— */
+.credit {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.credit__box {
+  border-radius: 28px;
+  padding: 32px;
+  background: #fff;
+}
+.credit__label { font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.credit__value { margin-top: 10px; font-size: clamp(24px, 2.6vw, 34px); font-weight: 700; line-height: 1.3; }
+.credit__sub { margin-top: 6px; font-size: 15px; color: var(--ink-2); }
+.next-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+  border-radius: 28px;
+  padding: 28px 32px;
+  background: var(--c-deep);
+  color: #fff;
+  transition: transform .5s var(--ease);
+}
+a.next-link:hover { transform: translateY(-4px); }
+.next-link.is-soon { background: var(--bg-2); color: var(--ink-3); }
+.next-link__name { font-size: clamp(22px, 2.6vw, 32px); font-weight: 700; }
+.next-link img { height: 72px; width: auto; }
+@media (max-width: 733px) { .credit { grid-template-columns: 1fr; } }
+
+/* ==========================================================================
+   图片放大查看（灯箱）
+   ========================================================================== */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 72px 16px 110px;
+  background: rgba(251, 248, 243, .82);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s var(--ease);
+}
+.lightbox.is-open { opacity: 1; pointer-events: auto; }
+.lightbox__img {
+  max-width: min(720px, 100%);
+  max-height: 100%;
+  width: auto;
+  object-fit: contain;
+  transform: scale(.94);
+  transition: transform .45s var(--ease);
+}
+.lightbox.is-open .lightbox__img { transform: none; }
+.lightbox__bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.lightbox__caption { font-size: 15px; font-weight: 600; min-width: 8em; text-align: center; }
+.lb-btn {
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 0 var(--line), 0 8px 20px -10px rgba(0, 0, 0, .3);
+  font-size: 14px;
+  font-weight: 600;
+}
+.lb-btn--dark { background: var(--ink); color: #fff; }
+.lightbox__close { position: absolute; top: 16px; right: 16px; padding: 0; width: 44px; font-size: 22px; }
+
+/* ==========================================================================
+   复制色号后的小提示
+   ========================================================================== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  z-index: 300;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translate(-50%, 16px);
+  pointer-events: none;
+  transition: opacity .3s var(--ease), transform .3s var(--ease);
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ==========================================================================
+   「减少动态效果」：系统设置开启时，关闭所有动画，直接显示最终画面
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+  html.js [data-reveal] { opacity: 1; transform: none; }
+  .scrub-text .ch { opacity: 1; }
+
+  /* 首页开场：不再吸顶，标题 + 角色直接排好 */
+  .intro { height: auto; }
+  .intro__stage { position: relative; height: auto; min-height: 100vh; padding: calc(var(--nav-h) + 8vh) 0 64px; display: flex; flex-direction: column; justify-content: center; gap: 48px; }
+  .intro__title, .intro__cast { position: relative; inset: auto; }
+  .intro__caption, .intro__hint { display: none; }
+  html.js .cast__item { opacity: 1; }
+
+  /* 角色页首屏：不吸顶，台词直接显示在名字下方 */
+  .ch-hero { height: auto; }
+  .ch-hero__stage { position: relative; height: auto; padding: calc(var(--nav-h) + 6vh) 0 0; display: flex; flex-direction: column; align-items: center; }
+  .ch-hero__text, .ch-hero__quote, .ch-hero__img { position: relative; inset: auto; transform: none; }
+  .ch-hero__quote { opacity: 1; margin-top: 32px; font-size: clamp(22px, 3vw, 36px); }
+  .ch-hero__img { margin-top: 32px; }
+}
