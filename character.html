@@ -3,39 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>角色 — 奶光镇</title>
-  <meta name="theme-color" content="#F2D6CC">
+  <title>奶油动物镇</title>
+  <meta name="theme-color" content="#F9DFDA">
   <link rel="stylesheet" href="style.css">
   <script>document.documentElement.classList.add('js');</script>
 </head>
-<!-- 角色详情页：同一个页面显示不同角色，网址后面的 ?id=naitu 决定显示谁
-     角色文字都在 script.js 最上面的 CHARACTERS 里修改 -->
+<!-- 角色详情页：网址后面的 ?id=naitu 决定显示哪位角色。想改文字请打开 data.js -->
 <body data-page="character" class="page-character">
-
-  <!-- ===================== 导航栏 ===================== -->
-  <header class="nav">
-    <div class="nav__inner">
-      <a class="nav__logo" href="index.html">奶光镇<small>NAIGWANG</small></a>
-      <button class="nav__toggle" aria-label="打开菜单" aria-expanded="false"><span></span><span></span></button>
-      <ul class="nav__links">
-        <li><a href="index.html#world" class="is-soon">世界观</a></li>
-        <li><a href="index.html#characters" aria-current="page">角色</a></li>
-        <li><a href="index.html#stickers" class="is-soon">表情包</a></li>
-        <li><a href="index.html#team" class="is-soon">团队</a></li>
-      </ul>
-    </div>
-  </header>
-
-  <!-- 页面内容由 script.js 根据角色数据自动生成 -->
+  <header class="nav" id="nav"></header>
   <main id="app"></main>
-
   <footer class="footer">
     <div class="container">
-      <a href="index.html#characters">‹ 返回全部居民</a>
-      <span>奶光镇 · NAIGWANG TOWN · 가톨릭대학교 AX 캐릭터디자인</span>
+      <a href="index.html#characters">‹ 全部居民 · 모든 주민</a>
+      <span>STUDIO NULL · 6조 · 가톨릭대학교 AX 캐릭터디자인</span>
     </div>
   </footer>
-
+  <script src="data.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

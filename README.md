@@ -1,28 +1,47 @@
-# 奶光镇 · NAIGWANG TOWN
+# 奶油动物镇 · CREAM ANIMAL TOWN
 
-가톨릭대학교 AX 캐릭터디자인 课程作业 —— 8 位「情绪治愈官」角色展示网站。
+从动物园里消失的动物们居住的小镇。
+가톨릭대학교 AX 캐릭터디자인 · STUDIO NULL（第 6 组）角色展示网站。
 
 ## 怎么打开
 
-双击 `index.html`，用浏览器（推荐 Chrome / Safari / Edge）打开即可。
+- **电脑**：双击 `index.html`，用 Chrome / Safari / Edge 打开。
+- **iPad / 手机**：「文件」App 不能直接打开网页，请用发布后的网址（GitHub Pages）。
 
 ## 文件说明
 
 | 文件 | 作用 |
 | --- | --- |
-| `index.html` | 首页（开场动画、介绍、角色墙） |
+| `data.js` | ★ **网站上所有文字都在这里**（中文 + 韩文），改字只改这个文件 |
+| `index.html` | 首页：开场、世界观、角色目的、分类、目标用户、平台、十件事、角色墙、表情包、幕后、团队 |
 | `character.html` | 角色详情页（`character.html?id=naitu` 显示奶兔） |
-| `style.css` | 全站样式（颜色、字号、动画） |
-| `script.js` | **所有角色文字都在这个文件最上面**，改文字改这里 |
+| `style.css` | 颜色、字号、动画 |
+| `script.js` | 页面功能（一般不用改） |
 | `assets/` | 图片 |
 
-## 图片命名规则
+## 图片文件夹
 
-编号对应：01 奶兔 · 02 奶猫 · 03 奶仓 · 04 奶熊 · 05 奶企 · 06 奶狐 · 07 奶海 · 08 奶小熊猫
+每个角色一个文件夹，文件夹名就是角色 id：
 
-- 立绘：`assets/hero_01.png`
-- 三视图：`assets/turn_clean_01.png`
-- 7 个精选表情：`assets/emo_01_1.png` ~ `assets/emo_01_7.png`（顺序和 `script.js` 里 `emotes` 的顺序一致）
+| id | 角色 |
+| --- | --- |
+| `naitu` | 奶兔 |
+| `naimao` | 奶猫 |
+| `naiqi` | 奶企 |
+| `naihaibao` | 奶海豹 |
+| `naihu` | 奶狐 |
+| `naicang` | 奶仓 |
+| `naixiong` | 奶熊 |
+| `naixiaoxiongmao` | 奶小熊猫 |
 
-> 目前的立绘和三视图是从 Week 8 PPT 里提取并放大的临时图，比较模糊。
-> 用同样的文件名把高清原图覆盖进 `assets/` 即可自动替换，代码不用改。
+每个文件夹里：
+
+- `hero.png`：透明底立绘（从角色卡自动去背）
+- `card.jpg`：角色卡原图
+- `ai_1.jpg`、`ai_2.jpg`：造型实验（第 6 周）
+- `sheet.jpg`：表情表（第 7 周）
+- `pose_1.jpg` ~ `pose_3.jpg`：3 种姿势（第 7 周）
+
+`assets/town/` 里是小镇插画、风格比较图和周边图。
+
+想换图片的话，用**同样的文件名**覆盖原文件就行，代码不用改。
