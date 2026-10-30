@@ -675,6 +675,167 @@ function renderHome() {
       bleedCap.style.transform = `translate3d(0, ${((1 - c) * 30).toFixed(1)}px, 0)`;
     }
   });
+
+  initCastInteract();
+}
+
+/* --------------------------------------------------------------------------
+   开场互动：光标跟随 · 悬停小弹 · 点击压扁 + 对话气泡
+   - 滚动动画改的是 .cast__item 的 transform，这里只改里面 img 的
+     CSS 变量（--tilt / --lx / --ly）和 rotate / translate / scale，互不冲突
+   - 想调手感就改下面 4 个数字
+   -------------------------------------------------------------------------- */
+function initCastInteract() {
+  const RADIUS = 360;     // 影响半径（px）：光标离角色多近开始有反应
+  const MAX_TILT = 9;     // 最大歪头角度（度）
+  const MAX_LEAN = 14;    // 最大靠近距离（px）
+  const MAX_DRIFT = 12;   // 大标题反方向漂移的最大距离（px）
+
+  const stage = $('.intro__stage'), h1 = $('.intro__h1');
+  const items = $$('.cast__item'), imgs = items.map(it => $('img', it));
+  if (!stage || !items.length) return;
+
+  // 跟着光标走的暖色光圈（放在标题和角色后面）
+  const spot = document.createElement('div');
+  spot.className = 'intro__spot';
+  spot.setAttribute('aria-hidden', 'true');
+  stage.insertBefore(spot, $('.intro__title'));
+
+  // 对话气泡
+  const bubble = document.createElement('div');
+  bubble.className = 'cast-bubble';
+  bubble.setAttribute('role', 'status');
+  stage.appendChild(bubble);
+  let bubbleFor = -1;
+
+  let px = null, py = null;          // 光标位置（null = 不在页面上）
+  let sx = 0, sy = 0, spotOn = false; // 光圈当前位置（会慢慢追上光标）
+  let raf = 0, touchTimer;
+
+  // 角色滚出来（透明度 > 0.3）之后才有反应
+  const isShown = el => parseFloat(el.style.opacity || getComputedStyle(el).opacity) > 0.3;
+
+  function resetAll() {
+    imgs.forEach(im => { im.style.removeProperty('--tilt'); im.style.removeProperty('--lx'); im.style.removeProperty('--ly'); });
+    h1.style.translate = '';
+    spot.classList.remove('is-on');
+    spotOn = false;
+  }
+
+  function frame() {
+    raf = 0;
+    if (reduceMotion.matches) { resetAll(); return; }
+    // 先统一读取位置……
+    const sr = stage.getBoundingClientRect();
+    const active = px !== null && py >= Math.max(0, sr.top) && py <= Math.min(innerHeight, sr.bottom);
+    const rects = items.map(it => it.getBoundingClientRect());
+    const shown = items.map(isShown);
+
+    // ……再统一写入，避免反复测量导致卡顿
+    items.forEach((it, i) => {
+      let tilt = 0, lx = 0, ly = 0;
+      if (active && shown[i]) {
+        const r = rects[i];
+        const dx = px - (r.left + r.width / 2), dy = py - (r.top + r.height * 0.45);
+        const d = Math.hypot(dx, dy);
+        if (d < RADIUS && d > 0) {
+          const k = 1 - d / RADIUS;
+          const s = k * k * (3 - 2 * k);           // 越近反应越大，边缘柔和过渡
+          tilt = (dx / d) * MAX_TILT * s;
+          lx = (dx / d) * MAX_LEAN * s;
+          ly = (dy / d) * MAX_LEAN * s * 0.5;
+        }
+      }
+      imgs[i].style.setProperty('--tilt', `${tilt.toFixed(2)}deg`);
+      imgs[i].style.setProperty('--lx', `${lx.toFixed(1)}px`);
+      imgs[i].style.setProperty('--ly', `${ly.toFixed(1)}px`);
+    });
+
+    let again = false;
+    if (active) {
+      const tx = px - sr.left, ty = py - sr.top;
+      if (!spotOn) { sx = tx; sy = ty; spotOn = true; }
+      sx += (tx - sx) * 0.12;                      // 每帧只追 12%，所以有一点延迟
+      sy += (ty - sy) * 0.12;
+      spot.style.transform = `translate3d(${sx.toFixed(1)}px, ${sy.toFixed(1)}px, 0)`;
+      spot.classList.add('is-on');
+      again = Math.abs(tx - sx) > 0.5 || Math.abs(ty - sy) > 0.5;
+      const nx = (px - (sr.left + sr.width / 2)) / (sr.width / 2);
+      const ny = (py - (sr.top + sr.height / 2)) / (sr.height / 2);
+      h1.style.translate = `${(-nx * MAX_DRIFT).toFixed(1)}px ${(-ny * MAX_DRIFT).toFixed(1)}px`;
+    } else {
+      spot.classList.remove('is-on');
+      spotOn = false;
+      h1.style.translate = '';
+    }
+    placeBubble();
+    if (again) raf = requestAnimationFrame(frame);
+  }
+  const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
+  const setPoint = (x, y) => { px = x; py = y; kick(); };
+  const clearPoint = () => { px = null; py = null; kick(); };
+
+  // 电脑：光标；手机：手指按住滑动
+  window.addEventListener('pointermove', e => setPoint(e.clientX, e.clientY), { passive: true });
+  window.addEventListener('mouseout', e => { if (!e.relatedTarget) clearPoint(); });
+  window.addEventListener('touchstart', e => { clearTimeout(touchTimer); const t = e.touches[0]; setPoint(t.clientX, t.clientY); }, { passive: true });
+  window.addEventListener('touchmove', e => { const t = e.touches[0]; setPoint(t.clientX, t.clientY); }, { passive: true });
+  window.addEventListener('touchend', () => { touchTimer = setTimeout(clearPoint, 600); }, { passive: true });
+  window.addEventListener('scroll', kick, { passive: true });
+  reduceMotion.addEventListener?.('change', kick);
+
+  // 重新播放一次 CSS 动画
+  function replay(el, cls) {
+    el.classList.remove('is-hop', 'is-squash');
+    void el.offsetWidth;
+    el.classList.add(cls);
+  }
+  imgs.forEach((im, i) => {
+    im.addEventListener('animationend', () => im.classList.remove('is-hop', 'is-squash'));
+
+    // 悬停：小弹一下（只对鼠标）
+    im.addEventListener('pointerenter', e => {
+      if (e.pointerType !== 'mouse' || reduceMotion.matches || !isShown(items[i])) return;
+      if (!im.classList.contains('is-squash')) replay(im, 'is-hop');
+    });
+
+    // 点击：压扁再弹起 + 气泡
+    im.addEventListener('click', e => {
+      if (!isShown(items[i])) return;
+      e.stopPropagation();
+      if (!reduceMotion.matches) replay(im, 'is-squash');
+      showBubble(i);
+    });
+  });
+
+  function showBubble(i) {
+    const c = CHARACTERS[i];
+    bubble.innerHTML = c.quote ? `「${L(c.quote)}」` : L(c.hook);
+    bubbleFor = i;
+    bubble.classList.remove('is-show');
+    void bubble.offsetWidth;
+    bubble.classList.add('is-show');
+    placeBubble();
+  }
+  function hideBubble() {
+    bubble.classList.remove('is-show');
+    bubbleFor = -1;
+  }
+  // 气泡放在角色头顶；靠近屏幕边缘时往里收，小尾巴仍然指着角色
+  function placeBubble() {
+    if (bubbleFor < 0) return;
+    if (!isShown(items[bubbleFor])) { hideBubble(); return; }
+    const sr = stage.getBoundingClientRect(), r = imgs[bubbleFor].getBoundingClientRect();
+    const cx = r.left + r.width / 2 - sr.left;
+    const half = bubble.offsetWidth / 2, pad = 10;
+    const left = Math.min(Math.max(cx, half + pad), sr.width - half - pad);
+    bubble.style.left = `${left.toFixed(1)}px`;
+    bubble.style.top = `${(r.top - sr.top).toFixed(1)}px`;
+    bubble.style.setProperty('--tail', `${(cx - left + half).toFixed(1)}px`);
+  }
+  // 点空白处气泡消失；滚动时跟着角色走
+  document.addEventListener('click', e => { if (!e.target.closest('.cast__item img')) hideBubble(); });
+  window.addEventListener('scroll', () => { if (bubbleFor >= 0) placeBubble(); }, { passive: true });
 }
 
 

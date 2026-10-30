@@ -296,6 +296,83 @@ html.js .cast__item { opacity: 0; }
   filter: drop-shadow(0 18px 22px rgba(107, 54, 48, .14));
 }
 .cast__item span { margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+
+/* —— 开场互动：光标跟随 / 悬停 / 点击（只作用在 img 上，不碰 .cast__item 的滚动动画） —— */
+.cast__item img {
+  rotate: var(--tilt, 0deg);                       /* 朝光标歪头 */
+  translate: var(--lx, 0px) var(--ly, 0px);        /* 朝光标靠过去 */
+  transform-origin: 50% 100%;                      /* 以脚底为中心 */
+  transition: rotate .35s var(--ease), translate .35s var(--ease);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.cast__item img.is-hop { animation: cast-hop .4s var(--ease); }
+.cast__item img.is-squash { animation: cast-squash .35s ease-out; }
+@keyframes cast-hop {
+  0%, 100% { scale: 1; }
+  40%      { scale: 1.06; }
+}
+@keyframes cast-squash {          /* 纵向 0.9 → 1.08 → 1 */
+  0%   { scale: 1 1; }
+  30%  { scale: 1 .9; }
+  65%  { scale: 1 1.08; }
+  100% { scale: 1 1; }
+}
+/* 大标题随光标轻微反方向漂移（用 translate，不和入场动画的 transform 冲突） */
+.intro__h1 { transition: translate .6s var(--ease); }
+/* 跟着光标走的暖色光圈 */
+.intro__spot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 520px;
+  height: 520px;
+  margin: -260px 0 0 -260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(247, 196, 186, .55) 0%, rgba(244, 229, 202, .38) 38%, rgba(251, 248, 242, 0) 70%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .5s var(--ease);
+  will-change: transform;
+}
+.intro__spot.is-on { opacity: 1; }
+/* 头顶的对话气泡 */
+.cast-bubble {
+  position: absolute;
+  z-index: 5;
+  max-width: min(260px, 82vw);
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+  box-shadow: 0 14px 32px -14px rgba(107, 54, 48, .4);
+  transform: translate(-50%, calc(-100% - 14px));
+  transform-origin: 50% 100%;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.cast-bubble::after {
+  content: "";
+  position: absolute;
+  left: var(--tail, 50%);
+  bottom: -6px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 3px;
+  transform: translateX(-50%) rotate(45deg);
+}
+.cast-bubble.is-show { opacity: 1; visibility: visible; animation: bubble-pop .35s var(--ease); }
+@keyframes bubble-pop {
+  from { opacity: 0; scale: .85; }
+  to   { opacity: 1; scale: 1; }
+}
 .intro__hint {
   position: absolute;
   left: 50%;
@@ -877,6 +954,9 @@ a.next-link:hover { transform: translateY(-4px); }
   .intro__title, .intro__cast { position: relative; inset: auto; }
   .intro__caption, .intro__hint { display: none; }
   html.js .cast__item { opacity: 1; }
+  .intro__spot { display: none; }
+  .cast__item img { rotate: none; translate: none; }
+  .intro__h1 { translate: none !important; }
 
   .bleed { height: auto; }
   .bleed__stage { position: relative; height: 70vh; }
