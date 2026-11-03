@@ -1004,6 +1004,32 @@ function renderCharacter() {
       </div>
     </section>
 
+    ${c.comics ? `
+    <!-- 10-2. 四格漫画（有 comics 数据的角色才显示） -->
+    <section class="section section--white" id="comics">
+      <div class="container--wide">
+        <div class="container">
+          <span class="eyebrow" data-reveal>W2 · ${L({ zh: '四格漫画（第 2 周）', ko: '4컷 만화 (2주 차)' })}</span>
+          <h2 class="headline headline--md" data-reveal>${L({ zh: `${c.name.zh}的一天，画成四格。`, ko: `${c.name.ko}의 하루, 네 컷으로.` })}</h2>
+          <p class="lead" data-reveal>${L({ zh: '点击可以放大查看和下载。右上角切换中 / 한，漫画里的台词也会跟着换。', ko: '클릭하면 크게 보고 다운로드할 수 있어요. 오른쪽 위에서 中 / 한을 바꾸면 대사도 바뀌어요.' })}</p>
+        </div>
+        <div class="comics block-gap">
+          ${c.comics.map((m, i) => `
+            <article class="comic-card" data-reveal style="--d:${i * 0.08}s">
+              ${['zh', 'ko'].map(k => `
+                <button type="button" class="comic-card__img zoomable l-${k}" ${zoomAttrs(`comics-${k}`, img(c, `comic-${m.no}-${k}.png`), { zh: `${c.name.zh} · #${m.no} ${m.title.zh}`, ko: `${c.name.ko} · #${m.no} ${m.title.ko}` })} aria-label="${m.title[k]}">
+                  <img src="${img(c, `comic-${m.no}-${k}.png`)}" alt="${m.title[k]}" loading="lazy" width="1080" height="1350">
+                </button>`).join('')}
+              <div class="comic-card__info">
+                <span class="tag">#${m.no} · ${L(m.type)}</span>
+                <h3 class="comic-card__title">${L(m.title)}</h3>
+                <p class="comic-card__desc">${L(m.desc)}</p>
+              </div>
+            </article>`).join('')}
+        </div>
+      </div>
+    </section>` : ''}
+
     <!-- 11. 设计者 + 下一位 -->
     <section class="section section--tight" id="credit">
       <div class="container">

@@ -861,6 +861,17 @@ html.js .ch-hero__img { animation-name: rise-img; animation-delay: .25s; }
 .pose__desc { margin-top: 6px; font-size: 15px; color: var(--ink-2); line-height: 1.6; }
 @media (max-width: 900px) { .poses { grid-template-columns: 1fr; } .pose { display: grid; grid-template-columns: 140px 1fr; align-items: center; } .pose__info { padding: 18px 18px 18px 0; } }
 
+/* —— 四格漫画 —— */
+.comics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; max-width: 980px; margin-left: auto; margin-right: auto; }
+.comic-card { border-radius: 28px; overflow: hidden; background: var(--bg); box-shadow: 0 1px 0 var(--line), 0 24px 48px -36px rgba(0, 0, 0, .3); }
+.comic-card__img { display: block; width: 100%; padding: 0; transition: transform .5s var(--ease); }
+.comic-card__img img { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
+.comic-card__img:hover { transform: scale(1.015); }
+.comic-card__info { padding: 18px 22px 24px; }
+.comic-card__title { margin-top: 10px; font-size: 21px; font-weight: 700; line-height: 1.35; }
+.comic-card__desc { margin-top: 6px; font-size: 15px; color: var(--ink-2); line-height: 1.6; }
+@media (max-width: 733px) { .comics { grid-template-columns: 1fr; gap: 18px; } }
+
 /* —— 下一位 —— */
 .next-link {
   display: flex;
