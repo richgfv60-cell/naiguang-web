@@ -153,7 +153,6 @@ function renderNav(prefix = '') {
       <nav class="nav__links" aria-label="主导航">
         <a href="${prefix}#world">${L(n.world)}</a>
         <a href="${prefix}#characters">${L(n.characters)}</a>
-        <a href="${prefix}#stickers">${L(n.stickers)}</a>
         <a href="${prefix}#making">${L(n.making)}</a>
         <a href="${prefix}#team">${L(n.team)}</a>
       </nav>
@@ -505,24 +504,6 @@ function renderHome() {
             <div class="card__img"><img src="${hero(c)}" alt="${both(c.name)}" loading="lazy"></div>
             <span class="card__more">${L(UI.more)}</span>
           </a>`).join('')}
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ 9. 表情包 ============ -->
-  <section class="section" id="stickers">
-    <div class="container--wide">
-      <div class="container">
-        <span class="eyebrow" data-reveal style="--c-deep:#B07A6C">${L(UI.nav.stickers)}</span>
-        <h2 class="headline" data-reveal>${L({ zh: '八个人，一百多种心情。', ko: '여덟 명, 백 가지가 넘는 기분.' })}</h2>
-        <p class="lead" data-reveal>${L({ zh: '第 7 周完成的表情表。点击放大查看，也可以直接下载。', ko: '7주 차에 완성한 표정 시트. 클릭하면 크게 보고 다운로드할 수 있어요.' })}</p>
-      </div>
-      <div class="stickers block-gap">
-        ${CHARACTERS.map((c, i) => `
-          <button class="sticker" type="button" data-reveal style="--d:${(i % 4) * 0.06}s" ${zoomAttrs('stickers', img(c, 'sheet.jpg'), { zh: `${c.name.zh} · 表情表`, ko: `${c.name.ko} · 표정 시트` })}>
-            <img src="${img(c, 'sheet.jpg')}" alt="${both(c.name)}" loading="lazy">
-            <div class="sticker__info"><span class="sticker__name">${L(c.name)}</span><span class="sticker__zoom">${L({ zh: '放大 ⤢', ko: '확대 ⤢' })}</span></div>
-          </button>`).join('')}
       </div>
     </div>
   </section>
@@ -977,8 +958,9 @@ function renderCharacter() {
     <!-- 9. 表情表 -->
     <section class="section section--white" id="sheet">
       <div class="container">
-        <span class="eyebrow" data-reveal>I-2 · ${L({ zh: '表情表（第 7 周）', ko: '표정 시트 (7주 차)' })}</span>
+        <span class="eyebrow" data-reveal>I-2 · ${L({ zh: '表情包（第 7 周）', ko: '이모티콘 (7주 차)' })}</span>
         <h2 class="headline headline--md" data-reveal>${L({ zh: '每一种心情，都有一张脸。', ko: '모든 기분에는 얼굴이 있어요.' })}</h2>
+        <p class="lead" data-reveal>${L({ zh: `${c.name.zh}的表情包。点击放大查看，也可以直接下载。`, ko: `${c.name.ko}의 이모티콘. 클릭하면 크게 보고 다운로드할 수 있어요.` })}</p>
         <div class="sheet block-gap zoomable" id="sheetBox" ${zoomAttrs('sheet', img(c, 'sheet.jpg'), capOf('表情表', '표정 시트'))}>
           <img src="${img(c, 'sheet.jpg')}" alt="" loading="lazy">
         </div>

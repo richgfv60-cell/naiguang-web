@@ -603,27 +603,6 @@ a.card:hover .card__img img { transform: scale(1.05) translateY(-4px); }
 }
 
 /* ==========================================================================
-   表情包墙
-   ========================================================================== */
-.stickers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.sticker {
-  display: block;
-  width: 100%;
-  border-radius: 24px;
-  overflow: hidden;
-  background: #fff;
-  text-align: left;
-  box-shadow: 0 1px 0 var(--line);
-  transition: transform .5s var(--ease), box-shadow .5s var(--ease);
-}
-.sticker img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: top; }
-.sticker__info { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px; }
-.sticker__name { font-weight: 700; }
-.sticker__zoom { font-size: 12px; color: var(--ink-3); }
-button.sticker:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -24px rgba(0, 0, 0, .35); }
-@media (max-width: 1000px) { .stickers { grid-template-columns: repeat(2, 1fr); } }
-
-/* ==========================================================================
    幕后
    ========================================================================== */
 .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
