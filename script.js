@@ -993,15 +993,23 @@ function renderCharacter() {
         <div class="container">
           <span class="eyebrow" data-reveal>W2 · ${L({ zh: '四格漫画（第 2 周）', ko: '4컷 만화 (2주 차)' })}</span>
           <h2 class="headline headline--md" data-reveal>${L({ zh: `${c.name.zh}的一天，画成四格。`, ko: `${c.name.ko}의 하루, 네 컷으로.` })}</h2>
-          <p class="lead" data-reveal>${L({ zh: '点击可以放大查看和下载。右上角切换中 / 한，漫画里的台词也会跟着换。', ko: '클릭하면 크게 보고 다운로드할 수 있어요. 오른쪽 위에서 中 / 한을 바꾸면 대사도 바뀌어요.' })}</p>
+          <p class="lead" data-reveal>${c.comics.some(m => !m.file)
+            ? L({ zh: '点击可以放大查看和下载。右上角切换中 / 한，漫画里的台词也会跟着换。', ko: '클릭하면 크게 보고 다운로드할 수 있어요. 오른쪽 위에서 中 / 한을 바꾸면 대사도 바뀌어요.' })
+            : L({ zh: '点击可以放大查看和下载。', ko: '클릭하면 크게 보고 다운로드할 수 있어요.' })}</p>
         </div>
         <div class="comics block-gap">
           ${c.comics.map((m, i) => `
             <article class="comic-card" data-reveal style="--d:${i * 0.08}s">
-              ${['zh', 'ko'].map(k => `
-                <button type="button" class="comic-card__img zoomable l-${k}" ${zoomAttrs(`comics-${k}`, img(c, `comic-${m.no}-${k}.png`), { zh: `${c.name.zh} · #${m.no} ${m.title.zh}`, ko: `${c.name.ko} · #${m.no} ${m.title.ko}` })} aria-label="${m.title[k]}">
-                  <img src="${img(c, `comic-${m.no}-${k}.png`)}" alt="${m.title[k]}" loading="lazy" width="1080" height="1350">
-                </button>`).join('')}
+              ${(m.file ? [null] : ['zh', 'ko']).map(k => {
+                // 有 file：一张图中韩通用；没有：comic-编号-zh.png / comic-编号-ko.png 跟着语言切换
+                const src = img(c, m.file || `comic-${m.no}-${k}.png`);
+                const [w, h] = m.size || [1080, 1350];
+                const label = k ? m.title[k] : `${m.title.zh} ${m.title.ko}`;
+                return `
+                <button type="button" class="comic-card__img zoomable${k ? ` l-${k}` : ''}" ${zoomAttrs(`comics-${k || 'all'}`, src, { zh: `${c.name.zh} · #${m.no} ${m.title.zh}`, ko: `${c.name.ko} · #${m.no} ${m.title.ko}` })} aria-label="${label}">
+                  <img src="${src}" alt="${label}" loading="lazy" width="${w}" height="${h}">
+                </button>`;
+              }).join('')}
               <div class="comic-card__info">
                 <span class="tag">#${m.no} · ${L(m.type)}</span>
                 <h3 class="comic-card__title">${L(m.title)}</h3>
