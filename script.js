@@ -1020,6 +1020,48 @@ function renderCharacter() {
       </div>
     </section>` : ''}
 
+    ${c.shorts ? `
+    <!-- 10-3. 竖屏短视频：Instagram 帖子样式（有 shorts 数据的角色才显示） -->
+    <section class="section" id="shorts">
+      <div class="container--wide">
+        <div class="container">
+          <span class="eyebrow" data-reveal>W3 · ${L({ zh: '竖屏短视频（第 3 周）', ko: '세로 숏폼 (3주 차)' })}</span>
+          <h2 class="headline headline--md" data-reveal>${L({ zh: '动得少，性格才看得见。', ko: '적게 움직여야 성격이 보인다.' })}</h2>
+          <p class="lead" data-reveal>${L({ zh: '点视频进入全屏，看看镇上的居民都留了什么言。双击送爱心，长按拖动可以调进度。', ko: '영상을 누르면 전체 화면으로, 마을 주민들의 댓글도 볼 수 있어요. 두 번 누르면 하트, 길게 눌러 끌면 재생 위치를 바꿀 수 있어요.' })}</p>
+        </div>
+        <div class="shorts block-gap">
+          ${c.shorts.map((v, i) => `
+            <article class="ig" data-short="${i}" data-reveal style="--d:${i * 0.08}s">
+              <header class="ig__head">
+                <img class="ig__avatar" src="${hero(c)}" alt="">
+                <div class="ig__who">
+                  <b>${L(c.name)}</b>
+                  <span class="ig__music">♫ ${v.music || L({ zh: '原创音频', ko: '오리지널 오디오' })}</span>
+                </div>
+              </header>
+              <div class="reel" tabindex="0" role="button" aria-label="${v.title.zh} / ${v.title.ko}">
+                ${['zh', 'ko'].map(k => `
+                  <video class="reel__video l-${k}" src="${img(c, `short-${v.no}-${k}.mp4`)}" poster="${img(c, `short-${v.no}-poster.jpg`)}"
+                    muted loop playsinline preload="metadata" aria-label="${v.title[k]}"></video>`).join('')}
+                <span class="reel__play" aria-hidden="true"></span>
+                <span class="reel__heart" aria-hidden="true">♥</span>
+                <button type="button" class="reel__sound" aria-label="声音 / 소리"></button>
+                <div class="reel__bar"><i></i><span class="reel__time"></span></div>
+              </div>
+              <div class="ig__actions">
+                <button type="button" class="ig__btn ig__like" aria-label="♥"><span class="ig__icon ig__icon--heart"></span><b class="ig__n">${v.likes || 0}</b></button>
+                <button type="button" class="ig__btn ig__open" aria-label="评论 / 댓글"><span class="ig__icon ig__icon--comment"></span><b>${(v.comments || []).length}</b></button>
+                <button type="button" class="ig__btn ig__share" aria-label="分享 / 공유"><span class="ig__icon ig__icon--send"></span></button>
+                <button type="button" class="ig__btn ig__save" aria-label="收藏 / 저장"><span class="ig__icon ig__icon--save"></span></button>
+              </div>
+              <p class="ig__caption"><b>${L(c.name)}</b> ${L(v.desc)}</p>
+              ${(v.comments || []).length ? `<button type="button" class="ig__more ig__open">${L({ zh: `查看全部 ${v.comments.length} 条评论`, ko: `댓글 ${v.comments.length}개 모두 보기` })}</button>` : ''}
+            </article>`).join('')}
+        </div>
+        ${c.shortsCredit ? `<p class="shorts__credit">${c.shortsCredit}</p>` : ''}
+      </div>
+    </section>` : ''}
+
     <!-- 11. 设计者 + 下一位 -->
     <section class="section section--tight" id="credit">
       <div class="container">
@@ -1040,6 +1082,11 @@ function renderCharacter() {
         </a>
       </div>
     </section>`;
+
+  /* —— 短视频：Instagram 帖子 + 全屏查看 ——
+     帖子：进入画面静音自动播放，右下角开关声音；点视频进入全屏；双击点赞；长按后左右拖动调进度
+     全屏：右边（手机是底部弹出）是评论区，评论的人是镇上的其他居民 */
+  if (c.shorts) initShorts(c);
 
   /* —— 配色卡：点击复制 —— */
   $$('.swatch').forEach(btn => btn.addEventListener('click', () => {
@@ -1088,6 +1135,332 @@ function renderCharacter() {
       sheet.style.transform = `scale(${(0.9 + p * 0.1).toFixed(4)})`;
     }
   });
+}
+
+
+/* ==========================================================================
+   短视频 · Instagram 样式（帖子卡片 + 全屏查看 + 居民评论）
+   ========================================================================== */
+const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+/* 给一个 .reel 加上手势：单击 / 双击 / 长按拖动调进度
+   getVideo()：返回现在要控制的 <video>；onTap / onDouble：单击、双击时做什么 */
+function attachReelGestures(reel, getVideo, { onTap, onDouble }) {
+  const bar = $('.reel__bar i', reel), label = $('.reel__time', reel);
+  let holdTimer, scrubbing = false, suppress = false, startX = 0, startY = 0, startT = 0, wasPlaying = false, lastTap = 0, tapTimer;
+
+  const paint = v => {
+    const d = v.duration || 1;
+    bar.style.transform = `scaleX(${(v.currentTime / d).toFixed(4)})`;
+    if (label) label.textContent = `${fmtTime(v.currentTime)} / ${fmtTime(d)}`;
+  };
+  reel._paint = paint;
+
+  reel.addEventListener('pointerdown', e => {
+    if (e.button > 0 || e.target.closest('.reel__sound')) return;
+    startX = e.clientX; startY = e.clientY; scrubbing = false;
+    suppress = false;                                     // 上一次拖动如果没有产生点击，这里清掉，免得吃掉这次点击
+    holdTimer = setTimeout(() => {                      // 长按 → 进入拖动进度模式
+      const v = getVideo();
+      scrubbing = true; suppress = true;
+      wasPlaying = !v.paused; startT = v.currentTime;
+      v.pause();
+      reel.classList.add('is-scrub');
+      try { reel.setPointerCapture(e.pointerId); } catch (err) { /* 忽略 */ }
+      paint(v);
+    }, 320);
+  });
+  reel.addEventListener('pointermove', e => {
+    if (!scrubbing) {
+      if (Math.abs(e.clientX - startX) > 10 || Math.abs(e.clientY - startY) > 10) clearTimeout(holdTimer);   // 在滚动，不算长按
+      return;
+    }
+    const v = getVideo(), d = v.duration || 0;
+    const t = Math.min(Math.max(startT + (e.clientX - startX) / reel.clientWidth * d, 0), Math.max(d - 0.05, 0));
+    v.currentTime = t;
+    paint(v);
+  });
+  const end = () => {
+    clearTimeout(holdTimer);
+    if (!scrubbing) return;
+    scrubbing = false;
+    reel.classList.remove('is-scrub');
+    const v = getVideo();
+    if (wasPlaying || !v.paused) v.play().catch(() => {});
+    else v.play().catch(() => {});
+  };
+  reel.addEventListener('pointerup', end);
+  reel.addEventListener('pointercancel', end);
+  reel.addEventListener('lostpointercapture', end);
+  // 手机：拖动进度时不要让页面跟着滚
+  reel.addEventListener('touchmove', e => { if (scrubbing) e.preventDefault(); }, { passive: false });
+  reel.addEventListener('contextmenu', e => e.preventDefault());
+
+  reel.addEventListener('click', e => {
+    if (suppress) { suppress = false; return; }          // 拖完进度松手，不算点击
+    if (e.target.closest('.reel__sound')) return;
+    const now = Date.now();
+    if (now - lastTap < 280) {                            // 双击
+      clearTimeout(tapTimer); lastTap = 0;
+      const h = $('.reel__heart', reel), box = reel.getBoundingClientRect();
+      h.style.left = `${e.clientX - box.left}px`; h.style.top = `${e.clientY - box.top}px`;
+      h.classList.remove('is-pop'); void h.offsetWidth; h.classList.add('is-pop');
+      onDouble && onDouble();
+      return;
+    }
+    lastTap = now;
+    tapTimer = setTimeout(() => onTap && onTap(), 280);   // 单击
+  });
+}
+
+function initShorts(c) {
+  const shorts = c.shorts;
+  const state = shorts.map(v => ({ liked: false, saved: false, likes: v.likes || 0, mine: [], heart: new Set() }));
+  const cards = $$('.ig[data-short]');
+  const curVideo = r => $$('.reel__video', r).find(v => v.offsetParent) || $('.reel__video', r);
+  let soundOn = false, active = null;
+
+  const syncReel = (r, v = curVideo(r)) => {
+    r.classList.toggle('is-muted', v.muted);
+    r.classList.toggle('is-paused', v.paused);
+  };
+  const playCard = r => {
+    const v = curVideo(r);
+    v.muted = !(soundOn && r === active);
+    v.play().then(() => syncReel(r)).catch(() => { v.muted = true; v.play().catch(() => {}); syncReel(r); });
+  };
+  const stopCard = r => { $$('.reel__video', r).forEach(v => v.pause()); syncReel(r); };
+
+  /* —— 点赞 / 收藏：帖子和全屏同步 —— */
+  const refresh = i => {
+    const s = state[i];
+    $$(`[data-short="${i}"] .ig__like, .igv[data-cur="${i}"] .ig__like`).forEach(b => {
+      b.classList.toggle('is-on', s.liked);
+      const n = $('.ig__n', b); if (n) n.textContent = s.likes;
+    });
+    $$(`[data-short="${i}"] .ig__save, .igv[data-cur="${i}"] .ig__save`).forEach(b => b.classList.toggle('is-on', s.saved));
+    const cnt = (shorts[i].comments || []).length + s.mine.length;
+    $$(`.igv[data-cur="${i}"] .ig__ncomment`).forEach(b => { b.textContent = cnt; });
+  };
+  const like = (i, force) => {
+    const s = state[i];
+    if (force && s.liked) return;
+    s.liked = !s.liked; s.likes += s.liked ? 1 : -1;
+    refresh(i);
+  };
+  const share = i => {
+    const url = `${location.href.split('#')[0]}#short-${shorts[i].no}`;
+    copyText(url).then(() => toast(tx({ zh: '链接已复制', ko: '링크가 복사됐어요' })));
+  };
+
+  /* —— 帖子卡片 —— */
+  const visible = new Set();
+  const io = 'IntersectionObserver' in window && new IntersectionObserver(es => es.forEach(e => {
+    const r = e.target;
+    if (e.isIntersecting) { visible.add(r); if (!reduceMotion.matches && !viewer.open) playCard(r); }
+    else { visible.delete(r); stopCard(r); }
+  }), { threshold: 0.6 });
+
+  cards.forEach(card => {
+    const i = +card.dataset.short, r = $('.reel', card);
+    if (io) io.observe(r);
+    $$('.reel__video', r).forEach(v => {
+      v.addEventListener('timeupdate', () => { if (v === curVideo(r) && !r.classList.contains('is-scrub')) r._paint(v); });
+      v.addEventListener('play', () => syncReel(r));
+      v.addEventListener('pause', () => syncReel(r));
+    });
+    attachReelGestures(r, () => curVideo(r), {
+      onTap: () => viewer.show(i, curVideo(r).currentTime),
+      onDouble: () => like(i, true)
+    });
+    $('.reel__sound', r).addEventListener('click', e => {
+      e.stopPropagation();
+      const v = curVideo(r);
+      soundOn = v.muted || v.paused;
+      active = soundOn ? r : null;
+      cards.forEach(o => { const or = $('.reel', o); if (or !== r) { $$('.reel__video', or).forEach(x => { x.muted = true; }); syncReel(or); } });
+      if (v.paused) playCard(r); else { v.muted = !soundOn; syncReel(r); }
+      r.classList.remove('flash'); void r.offsetWidth; r.classList.add('flash');
+    });
+    r.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); viewer.show(i, curVideo(r).currentTime); } });
+    $('.ig__like', card).addEventListener('click', () => like(i));
+    $('.ig__save', card).addEventListener('click', () => { state[i].saved = !state[i].saved; refresh(i); });
+    $('.ig__share', card).addEventListener('click', () => share(i));
+    $$('.ig__open', card).forEach(b => b.addEventListener('click', () => viewer.show(i, curVideo(r).currentTime, true)));
+    syncReel(r);
+  });
+
+  /* —— 全屏查看 —— */
+  const viewer = {
+    open: false, i: 0, el: null,
+    build() {
+      const el = document.createElement('div');
+      el.className = 'igv';
+      el.setAttribute('role', 'dialog');
+      el.setAttribute('aria-modal', 'true');
+      el.innerHTML = `
+        <button type="button" class="igv__close" aria-label="关闭 / 닫기">×</button>
+        <button type="button" class="igv__nav igv__nav--prev" aria-label="上一个 / 이전">‹</button>
+        <button type="button" class="igv__nav igv__nav--next" aria-label="下一个 / 다음">›</button>
+        <div class="igv__box">
+          <div class="igv__media">
+            <div class="reel reel--big">
+              <video class="reel__video" playsinline loop></video>
+              <span class="reel__play" aria-hidden="true"></span>
+              <span class="reel__heart" aria-hidden="true">♥</span>
+              <button type="button" class="reel__sound" aria-label="声音 / 소리"></button>
+              <div class="reel__bar"><i></i><span class="reel__time"></span></div>
+              <div class="igv__rail">
+                <button type="button" class="ig__btn ig__like"><span class="ig__icon ig__icon--heart"></span><b class="ig__n"></b></button>
+                <button type="button" class="ig__btn igv__sheet-btn"><span class="ig__icon ig__icon--comment"></span><b class="ig__ncomment"></b></button>
+                <button type="button" class="ig__btn ig__share"><span class="ig__icon ig__icon--send"></span></button>
+              </div>
+              <div class="igv__overlay-cap"></div>
+            </div>
+          </div>
+          <aside class="igv__panel">
+            <div class="igv__grab" aria-hidden="true"></div>
+            <header class="ig__head igv__head"></header>
+            <div class="igv__list"></div>
+            <div class="ig__actions igv__actions">
+              <button type="button" class="ig__btn ig__like"><span class="ig__icon ig__icon--heart"></span><b class="ig__n"></b></button>
+              <button type="button" class="ig__btn igv__focus"><span class="ig__icon ig__icon--comment"></span><b class="ig__ncomment"></b></button>
+              <button type="button" class="ig__btn ig__share"><span class="ig__icon ig__icon--send"></span></button>
+              <button type="button" class="ig__btn ig__save"><span class="ig__icon ig__icon--save"></span></button>
+            </div>
+            <form class="igv__form">
+              <input class="igv__input" maxlength="80" autocomplete="off">
+              <button type="submit" class="igv__post"></button>
+            </form>
+          </aside>
+        </div>`;
+      document.body.appendChild(el);
+      this.el = el;
+      const reel = $('.reel', el), video = $('video', el);
+      this.reel = reel; this.video = video;
+      video.addEventListener('timeupdate', () => { if (!reel.classList.contains('is-scrub')) reel._paint(video); });
+      video.addEventListener('play', () => syncReel(reel, video));
+      video.addEventListener('pause', () => syncReel(reel, video));
+      video.addEventListener('volumechange', () => syncReel(reel, video));
+      attachReelGestures(reel, () => video, {
+        onTap: () => { if (video.paused) { video.play().catch(() => {}); } else { video.muted = !video.muted; } reel.classList.remove('flash'); void reel.offsetWidth; reel.classList.add('flash'); },
+        onDouble: () => like(this.i, true)
+      });
+      $('.reel__sound', reel).addEventListener('click', e => { e.stopPropagation(); video.muted = !video.muted; if (video.paused) video.play().catch(() => {}); });
+      $('.igv__close', el).addEventListener('click', () => this.hide());
+      el.addEventListener('click', e => { if (e.target === el) this.hide(); });
+      $('.igv__nav--prev', el).addEventListener('click', () => this.show((this.i - 1 + shorts.length) % shorts.length, 0));
+      $('.igv__nav--next', el).addEventListener('click', () => this.show((this.i + 1) % shorts.length, 0));
+      $$('.ig__like', el).forEach(b => b.addEventListener('click', () => like(this.i)));
+      $$('.ig__share', el).forEach(b => b.addEventListener('click', () => share(this.i)));
+      $('.ig__save', el).addEventListener('click', () => { state[this.i].saved = !state[this.i].saved; refresh(this.i); });
+      $('.igv__sheet-btn', el).addEventListener('click', () => el.classList.toggle('is-sheet'));
+      $('.igv__grab', el).addEventListener('click', () => el.classList.remove('is-sheet'));
+      $('.igv__focus', el).addEventListener('click', () => $('.igv__input', el).focus());
+      // 评论区里点赞单条评论
+      $('.igv__list', el).addEventListener('click', e => {
+        const b = e.target.closest('.cmt__like'); if (!b) return;
+        const key = b.dataset.key, set = state[this.i].heart;
+        set.has(key) ? set.delete(key) : set.add(key);
+        b.classList.toggle('is-on', set.has(key));
+        const n = $('b', b); n.textContent = ((+b.dataset.base) + (set.has(key) ? 1 : 0)) || '';
+      });
+      // 自己留言（只保存在这次打开的页面里）
+      $('.igv__form', el).addEventListener('submit', e => {
+        e.preventDefault();
+        const input = $('.igv__input', el), t = input.value.trim();
+        if (!t) return;
+        state[this.i].mine.push(t); input.value = '';
+        this.renderList(true); refresh(this.i);
+      });
+      document.addEventListener('keydown', e => {
+        if (!this.open || e.target.closest('.igv__form')) return;
+        if (e.key === 'Escape') this.hide();
+        if (e.key === 'ArrowRight') this.show((this.i + 1) % shorts.length, 0);
+        if (e.key === 'ArrowLeft') this.show((this.i - 1 + shorts.length) % shorts.length, 0);
+      });
+      $('.lang-btn')?.addEventListener('click', () => setTimeout(() => { if (this.open) this.show(this.i, video.currentTime, el.classList.contains('is-sheet'), true); }, 0));
+    },
+    renderList(scroll) {
+      const v = shorts[this.i], s = state[this.i], list = $('.igv__list', this.el);
+      const row = (who, text, likes, key, isReply) => {
+        const p = byId(who) || c;
+        const on = s.heart.has(key);
+        return `
+          <div class="cmt${isReply ? ' cmt--reply' : ''}">
+            <img class="cmt__avatar" src="${hero(p)}" alt="">
+            <div class="cmt__body">
+              <p><b>${L(p.name)}</b> ${typeof text === 'string' ? text.replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[ch]) : L(text)}</p>
+              <span class="cmt__meta">${L(p.role)}</span>
+            </div>
+            ${likes != null ? `<button type="button" class="cmt__like${on ? ' is-on' : ''}" data-key="${key}" data-base="${likes}" aria-label="♥"><span class="ig__icon ig__icon--heart"></span><b>${(likes + (on ? 1 : 0)) || ''}</b></button>` : ''}
+          </div>`;
+      };
+      list.innerHTML = `
+        <div class="cmt cmt--cap">
+          <img class="cmt__avatar" src="${hero(c)}" alt="">
+          <div class="cmt__body"><p><b>${L(c.name)}</b> ${L(v.desc)}</p><span class="cmt__meta">♫ ${v.music || ''}</span></div>
+        </div>
+        ${(v.comments || []).map((m, k) => row(m.who, m.text, m.likes, `c${k}`) + (m.reply ? row(c.id, m.reply, 0, `r${k}`, true) : '')).join('')}
+        ${s.mine.map((t, k) => `
+          <div class="cmt cmt--me">
+            <span class="cmt__avatar cmt__avatar--me">${tx({ zh: '我', ko: '나' })}</span>
+            <div class="cmt__body"><p><b>${tx({ zh: '我', ko: '나' })}</b> ${t.replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[ch])}</p><span class="cmt__meta">${tx({ zh: '刚刚', ko: '방금' })}</span></div>
+          </div>`).join('')}`;
+      if (scroll) list.scrollTop = list.scrollHeight;
+    },
+    show(i, t = 0, sheet = false, keepSound = false) {
+      if (!this.el) this.build();
+      const el = this.el, v = shorts[i], lang = getLang();
+      const wasMuted = this.video.muted;
+      this.i = i;
+      el.dataset.cur = i;
+      el.classList.toggle('is-sheet', !!sheet);
+      $('.igv__head', el).innerHTML = `
+        <img class="ig__avatar" src="${hero(c)}" alt="">
+        <div class="ig__who"><b>${L(c.name)}</b><span class="ig__music">♫ ${v.music || ''}</span></div>`;
+      $('.igv__overlay-cap', el).innerHTML = `<b>${L(c.name)}</b> ${L(v.title)}<span>♫ ${v.music || ''}</span>`;
+      $('.igv__input', el).placeholder = tx({ zh: `以「我」的身份给${c.name.zh}留言…`, ko: `${c.name.ko}에게 댓글 남기기…` });
+      $('.igv__post', el).textContent = tx({ zh: '发布', ko: '게시' });
+      $$('.igv__nav', el).forEach(b => { b.hidden = shorts.length < 2; });
+      this.renderList();
+      refresh(i);
+      const video = this.video;
+      video.src = img(c, `short-${v.no}-${lang}.mp4`);
+      video.poster = img(c, `short-${v.no}-poster.jpg`);
+      video.muted = keepSound ? wasMuted : false;     // 进入全屏默认打开声音（和 Instagram 一样）
+      video.addEventListener('loadedmetadata', () => { try { video.currentTime = t; } catch (e) { /* 忽略 */ } }, { once: true });
+      video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
+      if (!this.open) {
+        this.open = true;
+        this.lastFocus = document.activeElement;
+        cards.forEach(card => stopCard($('.reel', card)));
+        document.documentElement.classList.add('igv-lock');
+        requestAnimationFrame(() => el.classList.add('is-open'));
+        $('.igv__close', el).focus();
+      }
+    },
+    hide() {
+      if (!this.open) return;
+      this.open = false;
+      this.video.pause();
+      this.el.classList.remove('is-open', 'is-sheet');
+      document.documentElement.classList.remove('igv-lock');
+      this.lastFocus?.focus?.();
+      visible.forEach(r => { if (!reduceMotion.matches) playCard(r); });
+    }
+  };
+
+  // 切换语言：帖子里换成对应语言的那一版
+  $('.lang-btn')?.addEventListener('click', () => setTimeout(() => cards.forEach(card => {
+    const r = $('.reel', card);
+    $$('.reel__video', r).forEach(v => { if (!v.offsetParent) { v.pause(); v.muted = true; } });
+    if (visible.has(r) && !reduceMotion.matches && !viewer.open) playCard(r); else syncReel(r);
+  }), 0));
+
+  // 网址带 #short-01 时直接打开
+  const m = location.hash.match(/^#short-(\d+)/);
+  if (m) { const i = shorts.findIndex(v => v.no === m[1]); if (i >= 0) setTimeout(() => viewer.show(i, 0, true), 300); }
 }
 
 

@@ -260,7 +260,47 @@ const CHARACTERS = [
       { no: '02', type: { zh: '信息漫画', ko: '정보툰' },
         title: { zh: '不想答应，又怕伤感情？', ko: '거절하고 싶은데, 상처 줄까 봐?' },
         desc: { zh: '温柔拒绝 3 步：共情 → 说不 → 替代。', ko: '다정한 거절 3단계: 공감 → 거절 → 대안.' } }
-    ]
+    ],
+    /* 竖屏短视频（第 3 周）：assets/naitu/short-编号-zh.mp4 / -ko.mp4，封面 short-编号-poster.jpg
+       comments：评论的人 = 镇上其他居民（who 填角色 id），说话方式按各自的性格 / 道具 / 小规则来写；
+       reply = 奶兔的回复。likes 是点赞数（展示用） */
+    shorts: [
+      { no: '01', type: { zh: 'Reels 漫画 · 15 秒', ko: '릴스툰 · 15초' },
+        music: 'Kevin MacLeod · Gymnopedie No 1', likes: 128,
+        title: { zh: '今晚一定要早点睡', ko: '오늘 밤은 꼭 일찍 자야지' },
+        desc: { zh: '今晚一定要早点睡。……门外又排起了长队。#奶油动物镇 #不会拒绝的奶兔', ko: '오늘 밤은 꼭 일찍 자야지. ……문밖에 또 긴 줄이. #크림동물마을 #거절못하는토끼' },
+        comments: [
+          { who: 'naiqi', likes: 24,
+            text: { zh: '按计划你 23:00 就该熄灯了。排队名单我来整理，明天按顺序来。', ko: '계획대로라면 23시에 소등했어야 해. 줄 선 명단은 내가 정리할게, 내일 순서대로.' },
+            reply: { zh: '谢谢奶企……那我先睡五分钟 🥲', ko: '고마워 우유 펭귄……그럼 5분만 먼저 잘게 🥲' } },
+          { who: 'naimao', likes: 31,
+            text: { zh: '第 3 格门外那只狐狸，排了两次。本侦查员看得一清二楚。🔍', ko: '3컷 문밖 여우, 두 번 줄 섰어. 본 정찰병 눈엔 다 보여. 🔍' } },
+          { who: 'naihu', likes: 9,
+            text: { zh: '……被发现了。我只是想再聊一个新点子嘛 💡', ko: '……들켰다. 새 아이디어 하나만 더 얘기하려던 거야 💡' } },
+          { who: 'naixiong', likes: 18,
+            text: { zh: '下次我站门口。只放真正需要的人进来。', ko: '다음엔 내가 문 앞에 설게. 정말 필요한 사람만 들여보낼게.' } },
+          { who: 'naixiaoxiongmao', likes: 7,
+            text: { zh: '「门外排起长队的夜晚」——已记进今天的小故事本 📒', ko: '‘문밖에 긴 줄이 선 밤’ — 오늘의 이야기 노트에 기록 완료 📒' } }
+        ] },
+      { no: '02', type: { zh: 'POV · 8 秒', ko: 'POV · 8초' },
+        music: 'Kevin MacLeod · Fluffing a Duck', likes: 203,
+        title: { zh: 'POV：凌晨一点，热可可刚泡好', ko: 'POV: 새벽 1시, 코코아를 막 탔는데' },
+        desc: { zh: 'POV：凌晨一点，热可可刚泡好。咚咚咚——「就聊五分钟……」#奶油动物镇 #深夜倾听', ko: 'POV: 새벽 1시, 코코아를 막 탔는데. 똑똑똑 — "5분만 얘기하자……" #크림동물마을 #심야상담' },
+        comments: [
+          { who: 'naihaibao', likes: 42,
+            text: { zh: '别紧张啦，先歇一会儿好不好？下次我给你送一杯永不冷却的云朵热饮 ☁️', ko: '긴장하지 마, 잠깐 쉬어 갈까? 다음엔 절대 식지 않는 구름 음료 갖다줄게 ☁️' },
+            reply: { zh: '要！要两杯！', ko: '좋아! 두 잔으로!' } },
+          { who: 'naicang', likes: 15,
+            text: { zh: '那条点点被子是从地下储藏室借的吧？记得登记哦。', ko: '그 물방울 이불, 지하 저장고에서 빌린 거지? 대여 기록 꼭 남겨 줘.' } },
+          { who: 'naiqi', likes: 11,
+            text: { zh: '凌晨一点不在作息表上。……这次算你特殊情况。⏰', ko: '새벽 1시는 일정표에 없어. ……이번만 예외로 해 줄게. ⏰' } },
+          { who: 'naimao', likes: 26,
+            text: { zh: '「就五分钟」——上次你也这么说，聊了两个小时。', ko: '‘5분만’ — 지난번에도 그렇게 말하고 두 시간 얘기했잖아.' } },
+          { who: 'naixiong', likes: 8,
+            text: { zh: '敲门的是谁？要我去门口看看吗。', ko: '노크한 게 누구야? 내가 문 앞에 가 볼까.' } }
+        ] }
+    ],
+    shortsCredit: 'Music: "Gymnopedie No 1", "Fluffing a Duck" — Kevin MacLeod (incompetech.com) · CC BY 4.0'
   },
   {
     id: 'naimao', no: '02',

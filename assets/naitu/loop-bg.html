@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<!-- 奶兔 · 短视频用 AI 循环背景：深夜的奶油小书屋（9:16，3 秒无限循环）
+     打开就会自动播放。录屏或直接放进剪辑 App 当背景，把角色 PNG 放在画面中间偏下。
+     网址后面加 ?t=1.5 会停在第 1.5 秒（用来逐帧导出视频）。 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>奶兔 · 循环背景</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #2B2238; }
+  body { display: grid; place-items: center; }
+  canvas { height: 100vh; aspect-ratio: 9 / 16; max-width: 100vw; display: block; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+// ———— 可以调的数字 ————
+const LOOP = 3;          // 循环秒数
+const LETTERS = 9;       // 飘落的信纸数量
+const HEARTS = 7;        // 往上飘的爱心数量
+const BULBS = 13;        // 串灯灯泡数量
+// ————————————————————
+
+const cv = document.getElementById('c'), g = cv.getContext('2d');
+const W = 1080, H = 1920, TAU = Math.PI * 2;
+let seed = 7;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+// 书架上的书（固定不动）
+const BOOK_COLORS = ['#F2B8B5', '#F4E5CA', '#C98E7A', '#E7A6A6', '#B9C7D9', '#D9B98A', '#9B7FA6', '#F7D9C4'];
+const shelves = [];
+for (const side of [0, 1]) for (let row = 0; row < 5; row++) {
+  const x0 = side ? W - 250 : 0, y = 430 + row * 230, books = [];
+  let x = x0 + 18;
+  while (x < x0 + 232) {
+    const w = 18 + rnd() * 22, h = 120 + rnd() * 70;
+    books.push({ x, w, h, c: BOOK_COLORS[(rnd() * BOOK_COLORS.length) | 0], tilt: rnd() < 0.12 ? 0.12 : 0 });
+    x += w + 3;
+  }
+  shelves.push({ x0, y, books });
+}
+// 会动的东西：每样都有自己的相位，3 秒后回到原位
+const letters = Array.from({ length: LETTERS }, (_, i) => ({ x: 120 + rnd() * 840, p: i / LETTERS, sway: 30 + rnd() * 40, s: 0.8 + rnd() * 0.5, spin: rnd() < 0.5 ? 1 : -1 }));
+const hearts = Array.from({ length: HEARTS }, (_, i) => ({ x: 160 + rnd() * 760, p: (i + 0.5) / HEARTS, s: 0.6 + rnd() * 0.6 }));
+const dust = Array.from({ length: 40 }, () => ({ x: rnd() * W, y: rnd() * H, p: rnd(), r: 2 + rnd() * 3 }));
+
+function heart(x, y, s, color) {
+  g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = color; g.beginPath();
+  g.moveTo(0, 18); g.bezierCurveTo(-34, -6, -20, -36, 0, -18); g.bezierCurveTo(20, -36, 34, -6, 0, 18); g.fill(); g.restore();
+}
+
+function draw(t) {
+  const k = (t % LOOP) / LOOP;                 // 0 → 1 的循环进度
+  // 墙：深夜暖紫 → 奶油色地板
+  const bg = g.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#2B2238'); bg.addColorStop(0.55, '#4A3550'); bg.addColorStop(0.78, '#7A5560'); bg.addColorStop(1, '#C99A86');
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+
+  // 圆窗和月亮
+  g.fillStyle = '#1E2436'; g.beginPath(); g.arc(W / 2, 520, 170, 0, TAU); g.fill();
+  g.strokeStyle = '#8A6A55'; g.lineWidth = 18; g.stroke();
+  g.fillStyle = '#FFF4D6'; g.beginPath(); g.arc(W / 2 + 50, 470, 56, 0, TAU); g.fill();
+  g.fillStyle = '#1E2436'; g.beginPath(); g.arc(W / 2 + 78, 452, 52, 0, TAU); g.fill();
+  for (let i = 0; i < 6; i++) {                // 窗外星星闪烁
+    const a = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(TAU * (k * 2 + i / 6)));
+    g.fillStyle = `rgba(255,244,214,${a})`; g.beginPath(); g.arc(W / 2 - 110 + i * 38, 560 + ((i * 53) % 90) - 40, 4, 0, TAU); g.fill();
+  }
+
+  // 书架
+  for (const sh of shelves) {
+    g.fillStyle = '#6B4A3E'; g.fillRect(sh.x0, sh.y, 250, 22);
+    for (const b of sh.books) {
+      g.save(); g.translate(b.x, sh.y); g.rotate(-b.tilt); g.fillStyle = b.c; g.fillRect(0, -b.h, b.w, b.h);
+      g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(0, -b.h + 18, b.w, 6); g.restore();
+    }
+  }
+
+  // 台灯光晕（缓慢呼吸）
+  const glow = 0.55 + 0.15 * Math.sin(TAU * k);
+  for (const [gx, gy] of [[150, 1240], [W - 150, 1240]]) {
+    const rg = g.createRadialGradient(gx, gy, 10, gx, gy, 420);
+    rg.addColorStop(0, `rgba(255,214,160,${glow})`); rg.addColorStop(1, 'rgba(255,214,160,0)');
+    g.fillStyle = rg; g.fillRect(gx - 420, gy - 420, 840, 840);
+  }
+  // 中间偏下：给角色的柔光（角色放这里）
+  const cg = g.createRadialGradient(W / 2, 1180, 40, W / 2, 1180, 520);
+  cg.addColorStop(0, 'rgba(249,223,218,.45)'); cg.addColorStop(1, 'rgba(249,223,218,0)');
+  g.fillStyle = cg; g.fillRect(0, 600, W, 1200);
+
+  // 串灯（依次闪烁）
+  g.strokeStyle = '#5A4048'; g.lineWidth = 4; g.beginPath();
+  for (let i = 0; i <= 40; i++) { const x = i / 40 * W, y = 300 + Math.sin(i / 40 * Math.PI) * 90; i ? g.lineTo(x, y) : g.moveTo(x, y); }
+  g.stroke();
+  for (let i = 0; i < BULBS; i++) {
+    const u = (i + 0.5) / BULBS, x = u * W, y = 300 + Math.sin(u * Math.PI) * 90 + 16;
+    const on = 0.45 + 0.55 * Math.max(0, Math.sin(TAU * (k - i / BULBS)));
+    const bg2 = g.createRadialGradient(x, y, 2, x, y, 46);
+    bg2.addColorStop(0, `rgba(255,226,170,${on})`); bg2.addColorStop(1, 'rgba(255,226,170,0)');
+    g.fillStyle = bg2; g.fillRect(x - 46, y - 46, 92, 92);
+    g.fillStyle = i % 2 ? '#FFE2AA' : '#F7C4BA'; g.beginPath(); g.ellipse(x, y, 10, 14, 0, 0, TAU); g.fill();
+  }
+
+  // 飘落的信纸（每封 3 秒落完一次，出画面后从上面重新进来）
+  for (const L of letters) {
+    const q = (k + L.p) % 1, y = -120 + q * (H + 240), x = L.x + Math.sin(TAU * (q * 2 + L.p)) * L.sway;
+    g.save(); g.translate(x, y); g.rotate(Math.sin(TAU * q) * 0.5 * L.spin); g.scale(L.s, L.s);
+    g.fillStyle = '#FFF8EE'; g.fillRect(-40, -28, 80, 56);
+    g.strokeStyle = '#E2C9B6'; g.lineWidth = 3; g.strokeRect(-40, -28, 80, 56);
+    g.beginPath(); g.moveTo(-40, -28); g.lineTo(0, 6); g.lineTo(40, -28); g.stroke();
+    heart(0, 4, 0.32, '#E7A6A6'); g.restore();
+  }
+  // 往上飘的小爱心
+  for (const h of hearts) {
+    const q = (k + h.p) % 1, y = H + 80 - q * (H + 160), x = h.x + Math.sin(TAU * (q + h.p)) * 24;
+    g.globalAlpha = 0.75; heart(x, y, h.s, '#F2B8B5'); g.globalAlpha = 1;
+  }
+  // 光点
+  for (const d of dust) {
+    const a = 0.15 + 0.35 * (0.5 + 0.5 * Math.sin(TAU * (k + d.p)));
+    g.fillStyle = `rgba(255,240,220,${a})`; g.beginPath(); g.arc(d.x, d.y, d.r, 0, TAU); g.fill();
+  }
+}
+
+const fixed = new URLSearchParams(location.search).get('t');
+if (fixed !== null) { draw(parseFloat(fixed)); window.ready = true; }
+else {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const t0 = performance.now();
+  const loop = now => { draw((now - t0) / 1000); if (!reduce) requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

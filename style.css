@@ -851,6 +851,115 @@ html.js .ch-hero__img { animation-name: rise-img; animation-delay: .25s; }
 .comic-card__desc { margin-top: 6px; font-size: 15px; color: var(--ink-2); line-height: 1.6; }
 @media (max-width: 733px) { .comics { grid-template-columns: 1fr; gap: 18px; } }
 
+/* —— 竖屏短视频：Instagram 帖子样式 —— */
+.shorts { display: grid; grid-template-columns: repeat(2, minmax(0, 380px)); justify-content: center; align-items: start; gap: 32px; }
+.shorts__credit { margin-top: 28px; text-align: center; font-size: 12px; color: var(--ink-3); }
+@media (max-width: 733px) { .shorts { grid-template-columns: minmax(0, 400px); } }
+
+.ig { border-radius: 22px; overflow: hidden; background: #fff; box-shadow: 0 1px 0 var(--line), 0 24px 48px -32px rgba(0, 0, 0, .3); }
+.ig__head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+.ig__avatar { width: 38px; height: 38px; flex: none; border-radius: 50%; object-fit: contain; background: var(--c-tint); padding: 3px; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--c-deep); }
+.ig__who { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.ig__who b { font-size: 15px; }
+.ig__music { font-size: 12px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ig__actions { display: flex; align-items: center; gap: 16px; padding: 10px 14px 4px; }
+.ig__btn { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; color: var(--ink); }
+.ig__btn:last-child { margin-left: auto; }
+.ig__btn b { font-weight: 700; }
+.ig__icon { width: 26px; height: 26px; background: currentColor; -webkit-mask: var(--i) center / contain no-repeat; mask: var(--i) center / contain no-repeat; transition: transform .2s var(--ease); }
+.ig__btn:active .ig__icon { transform: scale(.85); }
+.ig__icon--heart { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M12 20.5S3 15 3 8.8A4.8 4.8 0 0 1 12 6.3a4.8 4.8 0 0 1 9 2.5C21 15 12 20.5 12 20.5z'/%3E%3C/svg%3E"); }
+.is-on > .ig__icon--heart { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 20.5S3 15 3 8.8A4.8 4.8 0 0 1 12 6.3a4.8 4.8 0 0 1 9 2.5C21 15 12 20.5 12 20.5z'/%3E%3C/svg%3E"); color: #F25C78; animation: ig-like .35s var(--ease); }
+@keyframes ig-like { 40% { transform: scale(1.3); } }
+.ig__icon--comment { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M20.7 16.3A9 9 0 1 0 17 20l4 1z'/%3E%3C/svg%3E"); }
+.ig__icon--send { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M22 3 9.2 10.1M22 3l-7.2 18-3.6-7.6L3 9.8z'/%3E%3C/svg%3E"); }
+.ig__icon--save { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M19 21 12 16l-7 5V3h14z'/%3E%3C/svg%3E"); }
+.is-on > .ig__icon--save { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 21 12 16l-7 5V3h14z'/%3E%3C/svg%3E"); }
+.ig__caption { padding: 6px 14px 0; font-size: 14px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ig__more { display: block; padding: 6px 14px 16px; font-size: 14px; color: var(--ink-3); }
+
+/* —— 视频本体（帖子和全屏共用） —— */
+.reel { position: relative; aspect-ratio: 9 / 16; background: #2B2238; overflow: hidden; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: pan-y; }
+.reel:focus-visible { outline: 3px solid var(--c-deep); outline-offset: -3px; }
+.reel__video { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.reel__sound { position: absolute; right: 12px; bottom: 18px; z-index: 2; width: 34px; height: 34px; border-radius: 50%; background: rgba(0, 0, 0, .45); display: grid; place-items: center; transition: opacity .2s; }
+.reel__sound::before { content: ""; width: 18px; height: 18px; background: #fff; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat;
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 9v6h4l5 4V5L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z'/%3E%3C/svg%3E"); }
+.reel.is-muted .reel__sound::before { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 9v6h4l5 4V5L7 9H3zm13.6 3 2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4z'/%3E%3C/svg%3E"); }
+.reel.flash .reel__sound { animation: reel-flash .5s var(--ease); }
+@keyframes reel-flash { 40% { transform: scale(1.35); } }
+.reel__play { position: absolute; left: 50%; top: 50%; width: 72px; height: 72px; margin: -36px 0 0 -36px; border-radius: 50%; background: rgba(0, 0, 0, .4); opacity: 0; transform: scale(.8); transition: opacity .2s, transform .2s; pointer-events: none; }
+.reel__play::before { content: ""; position: absolute; left: 28px; top: 22px; border-left: 24px solid #fff; border-top: 14px solid transparent; border-bottom: 14px solid transparent; }
+.reel.is-paused:not(.is-scrub) .reel__play { opacity: 1; transform: none; }
+.reel__heart { position: absolute; z-index: 3; font-size: 96px; line-height: 1; color: #F25C78; text-shadow: 0 6px 24px rgba(0, 0, 0, .25); transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }
+.reel__heart.is-pop { animation: reel-heart .9s var(--ease) forwards; }
+@keyframes reel-heart { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.3) rotate(-12deg); } 25% { opacity: 1; transform: translate(-50%, -50%) scale(1.15) rotate(-12deg); } 60% { opacity: 1; transform: translate(-50%, -60%) scale(1) rotate(-12deg); } 100% { opacity: 0; transform: translate(-50%, -110%) scale(.9) rotate(-12deg); } }
+/* 进度条：平时是底部细线；长按时变粗、出现时间，左右拖动调进度 */
+.reel__bar { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255, 255, 255, .25); pointer-events: none; transition: height .2s var(--ease), left .2s, right .2s, bottom .2s, border-radius .2s; }
+.reel__bar i { display: block; height: 100%; background: #fff; border-radius: inherit; transform: scaleX(0); transform-origin: left; }
+.reel__time { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); padding: 6px 12px; border-radius: 999px; background: rgba(0, 0, 0, .55); color: #fff; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; opacity: 0; transition: opacity .2s; }
+.reel.is-scrub .reel__bar { left: 16px; right: 16px; bottom: 40px; height: 8px; border-radius: 99px; background: rgba(255, 255, 255, .35); }
+.reel.is-scrub .reel__time { opacity: 1; }
+.reel.is-scrub .reel__sound { opacity: 0; }
+.reel.is-scrub::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 60%, rgba(0, 0, 0, .35)); pointer-events: none; }
+
+/* —— 全屏查看（点帖子进入） —— */
+html.igv-lock, html.igv-lock body { overflow: hidden; }
+.igv { position: fixed; inset: 0; z-index: 250; display: grid; place-items: center; background: rgba(12, 10, 16, .82); opacity: 0; visibility: hidden; transition: opacity .3s var(--ease), visibility .3s; }
+.igv.is-open { opacity: 1; visibility: visible; }
+.igv__close { position: absolute; top: 14px; right: 18px; z-index: 5; width: 44px; height: 44px; font-size: 34px; line-height: 1; color: #fff; }
+.igv__nav { position: absolute; top: 50%; z-index: 4; width: 44px; height: 44px; margin-top: -22px; border-radius: 50%; background: rgba(255, 255, 255, .9); font-size: 28px; line-height: 1; color: var(--ink); }
+.igv__nav--prev { left: 18px; }
+.igv__nav--next { right: 18px; }
+.igv__box { display: flex; height: min(92vh, 860px); max-width: calc(100vw - 140px); border-radius: 6px; overflow: hidden; background: #fff; transform: scale(.96); transition: transform .3s var(--ease); }
+.igv.is-open .igv__box { transform: none; }
+.igv__media { height: 100%; aspect-ratio: 9 / 16; background: #000; }
+.reel--big { height: 100%; aspect-ratio: auto; }
+.igv__rail, .igv__overlay-cap { display: none; }
+.igv__panel { width: 400px; display: flex; flex-direction: column; border-left: 1px solid var(--line); }
+.igv__head { border-bottom: 1px solid var(--line); }
+.igv__grab { display: none; }
+.igv__list { flex: 1; overflow-y: auto; padding: 8px 14px; overscroll-behavior: contain; }
+.igv__actions { border-top: 1px solid var(--line); padding-bottom: 10px; }
+.igv__form { display: flex; gap: 8px; padding: 10px 14px 14px; border-top: 1px solid var(--line); }
+.igv__input { flex: 1; min-width: 0; border: 0; outline: 0; font: inherit; font-size: 14px; background: transparent; color: var(--ink); }
+.igv__post { font-size: 14px; font-weight: 700; color: #0095F6; }
+.cmt { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; }
+.cmt--reply { margin-left: 46px; padding-top: 0; }
+.cmt--cap { padding-bottom: 14px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.cmt__avatar { width: 34px; height: 34px; flex: none; border-radius: 50%; object-fit: contain; background: var(--bg-2); padding: 2px; }
+.cmt__avatar--me { display: grid; place-items: center; background: var(--c-tint); color: var(--c-deep); font-size: 13px; font-weight: 700; }
+.cmt--reply .cmt__avatar { width: 26px; height: 26px; }
+.cmt__body { flex: 1; min-width: 0; }
+.cmt__body p { font-size: 14px; line-height: 1.5; word-break: break-word; }
+.cmt__body b { margin-right: 4px; }
+.cmt__meta { font-size: 12px; color: var(--ink-3); }
+.cmt__like { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 4px; color: var(--ink-3); font-size: 11px; }
+.cmt__like .ig__icon { width: 14px; height: 14px; }
+.cmt__like.is-on { color: #F25C78; }
+
+/* 手机：视频全屏，右侧竖排按钮，评论从底部弹出 */
+@media (max-width: 900px) {
+  .igv { background: #000; }
+  .igv__box { width: 100%; height: 100%; max-width: none; border-radius: 0; background: #000; }
+  .igv__media { width: 100%; aspect-ratio: auto; }
+  .igv__nav { display: none; }
+  .igv__close { top: 10px; right: 10px; text-shadow: 0 1px 6px rgba(0, 0, 0, .5); }
+  .reel--big .reel__video { object-fit: contain; }
+  .igv__rail { display: flex; flex-direction: column; gap: 18px; position: absolute; right: 10px; bottom: 120px; z-index: 2; }
+  .igv__rail .ig__btn { flex-direction: column; gap: 2px; color: #fff; font-size: 12px; filter: drop-shadow(0 1px 4px rgba(0, 0, 0, .5)); margin: 0; }
+  .igv__rail .ig__icon { width: 30px; height: 30px; }
+  .igv__overlay-cap { display: block; position: absolute; left: 14px; right: 70px; bottom: 70px; z-index: 2; color: #fff; font-size: 14px; line-height: 1.5; text-shadow: 0 1px 6px rgba(0, 0, 0, .6); pointer-events: none; }
+  .igv__overlay-cap span { display: block; font-size: 12px; opacity: .85; }
+  .reel--big .reel__sound { bottom: auto; top: 14px; left: 14px; right: auto; }
+  .igv__panel { position: absolute; left: 0; right: 0; bottom: 0; height: 68%; width: auto; border: 0; border-radius: 18px 18px 0 0; background: #fff; transform: translateY(105%); transition: transform .35s var(--ease); z-index: 6; }
+  .igv.is-sheet .igv__panel { transform: none; }
+  .igv__grab { display: block; padding: 10px 0 2px; cursor: pointer; }
+  .igv__grab::before { content: ""; display: block; width: 40px; height: 4px; margin: 0 auto; border-radius: 4px; background: rgba(0, 0, 0, .2); }
+  .igv__head, .igv__actions { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .igv__box, .igv__panel { transition: none; } }
+
 /* —— 下一位 —— */
 .next-link {
   display: flex;
