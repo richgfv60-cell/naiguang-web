@@ -911,12 +911,12 @@ html.igv-lock, html.igv-lock body { overflow: hidden; }
 .igv__nav { position: absolute; top: 50%; z-index: 4; width: 44px; height: 44px; margin-top: -22px; border-radius: 50%; background: rgba(255, 255, 255, .9); font-size: 28px; line-height: 1; color: var(--ink); }
 .igv__nav--prev { left: 18px; }
 .igv__nav--next { right: 18px; }
-.igv__box { display: flex; height: min(92vh, 860px); max-width: calc(100vw - 140px); border-radius: 6px; overflow: hidden; background: #fff; transform: scale(.96); transition: transform .3s var(--ease); }
+.igv__box { --h: min(92vh, 860px); display: flex; width: fit-content; height: var(--h); max-width: calc(100vw - 140px); border-radius: 6px; overflow: hidden; background: #fff; transform: scale(.96); transition: transform .3s var(--ease); }
 .igv.is-open .igv__box { transform: none; }
-.igv__media { height: 100%; aspect-ratio: 9 / 16; background: #000; }
+.igv__media { flex: none; height: 100%; width: calc(var(--h) * 9 / 16); background: #000; }   /* 宽度按 9:16 算死，避免 Safari 留出空白 */
 .reel--big { height: 100%; aspect-ratio: auto; }
 .igv__rail, .igv__overlay-cap { display: none; }
-.igv__panel { width: 400px; display: flex; flex-direction: column; border-left: 1px solid var(--line); }
+.igv__panel { flex: none; width: 400px; display: flex; flex-direction: column; border-left: 1px solid var(--line); }
 .igv__head { border-bottom: 1px solid var(--line); }
 .igv__grab { display: none; }
 .igv__list { flex: 1; overflow-y: auto; padding: 8px 14px; overscroll-behavior: contain; }
