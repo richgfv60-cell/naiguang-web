@@ -1020,29 +1020,45 @@ function renderCharacter() {
       </div>
     </section>` : ''}
 
-    ${c.shorts ? `
-    <!-- 10-3. 竖屏短视频：Instagram 帖子样式（有 shorts 数据的角色才显示） -->
+    ${c.shorts || c.shortsPending ? `
+    <!-- 10-3. 竖屏短视频：Instagram 帖子样式（有 shorts 数据的角色才显示；shortsPending = 还没交，显示占位卡） -->
     <section class="section" id="shorts">
       <div class="container--wide">
         <div class="container">
           <span class="eyebrow" data-reveal>W3 · ${L({ zh: '竖屏短视频（第 3 周）', ko: '세로 숏폼 (3주 차)' })}</span>
           <h2 class="headline headline--md" data-reveal>${L({ zh: '动得少，性格才看得见。', ko: '적게 움직여야 성격이 보인다.' })}</h2>
-          <p class="lead" data-reveal>${L({ zh: '点视频进入全屏，看看镇上的居民都留了什么言。双击送爱心，长按拖动可以调进度。', ko: '영상을 누르면 전체 화면으로, 마을 주민들의 댓글도 볼 수 있어요. 두 번 누르면 하트, 길게 눌러 끌면 재생 위치를 바꿀 수 있어요.' })}</p>
+          <p class="lead" data-reveal>${c.shortsPending
+            ? L({ zh: '视频还在准备中，上传后会出现在这里。', ko: '영상은 아직 준비 중이에요. 업로드하면 여기에 나타나요.' })
+            : (c.shorts || []).some(v => (v.comments || []).length)
+              ? L({ zh: '点视频进入全屏，看看镇上的居民都留了什么言。双击送爱心，长按拖动可以调进度。', ko: '영상을 누르면 전체 화면으로, 마을 주민들의 댓글도 볼 수 있어요. 두 번 누르면 하트, 길게 눌러 끌면 재생 위치를 바꿀 수 있어요.' })
+              : L({ zh: '点视频进入全屏。双击送爱心，长按拖动可以调进度。', ko: '영상을 누르면 전체 화면으로. 두 번 누르면 하트, 길게 눌러 끌면 재생 위치를 바꿀 수 있어요.' })}</p>
         </div>
         <div class="shorts block-gap">
-          ${c.shorts.map((v, i) => `
+          ${c.shortsPending ? [1, 2].map(n => `
+            <article class="ig ig--pending" data-reveal style="--d:${(n - 1) * 0.08}s">
+              <header class="ig__head">
+                <img class="ig__avatar" src="${hero(c)}" alt="">
+                <div class="ig__who"><b>${L(c.name)}</b><span class="ig__music">#0${n}</span></div>
+              </header>
+              <div class="reel reel--pending">
+                <img src="${hero(c)}" alt="">
+                <p>${L({ zh: '视频准备中', ko: '영상 준비 중' })}</p>
+                <span>${L({ zh: '上传后会出现在这里', ko: '업로드하면 여기에 나타나요' })}</span>
+              </div>
+            </article>`).join('') : ''}
+          ${(c.shorts || []).map((v, i) => `
             <article class="ig" data-short="${i}" data-reveal style="--d:${i * 0.08}s">
               <header class="ig__head">
                 <img class="ig__avatar" src="${hero(c)}" alt="">
                 <div class="ig__who">
                   <b>${L(c.name)}</b>
-                  <span class="ig__music">♫ ${v.music || L({ zh: '原创音频', ko: '오리지널 오디오' })}</span>
+                  <span class="ig__music">♫ ${L(v.music || { zh: '原创音频', ko: '오리지널 오디오' })}</span>
                 </div>
               </header>
-              <div class="reel" tabindex="0" role="button" aria-label="${v.title.zh} / ${v.title.ko}">
-                ${['zh', 'ko'].map(k => `
-                  <video class="reel__video l-${k}" src="${img(c, `short-${v.no}-${k}.mp4`)}" poster="${img(c, `short-${v.no}-poster.jpg`)}"
-                    muted loop playsinline preload="metadata" aria-label="${v.title[k]}"></video>`).join('')}
+              <div class="reel${v.fit === 'contain' ? ' reel--contain' : ''}" tabindex="0" role="button" aria-label="${v.title.zh} / ${v.title.ko}">
+                ${(v.file ? [null] : ['zh', 'ko']).map(k => `
+                  <video class="reel__video${k ? ` l-${k}` : ''}" src="${shortSrc(c, v, k)}" poster="${shortPoster(c, v)}"
+                    muted loop playsinline preload="metadata" aria-label="${k ? v.title[k] : v.title.zh}"></video>`).join('')}
                 <span class="reel__play" aria-hidden="true"></span>
                 <span class="reel__heart" aria-hidden="true">♥</span>
                 <button type="button" class="reel__sound" aria-label="声音 / 소리"></button>
@@ -1086,7 +1102,7 @@ function renderCharacter() {
   /* —— 短视频：Instagram 帖子 + 全屏查看 ——
      帖子：进入画面静音自动播放，右下角开关声音；点视频进入全屏；双击点赞；长按后左右拖动调进度
      全屏：右边（手机是底部弹出）是评论区，评论的人是镇上的其他居民 */
-  if (c.shorts) initShorts(c);
+  if (c.shorts && c.shorts.length) initShorts(c);
 
   /* —— 配色卡：点击复制 —— */
   $$('.swatch').forEach(btn => btn.addEventListener('click', () => {
@@ -1141,6 +1157,9 @@ function renderCharacter() {
 /* ==========================================================================
    短视频 · Instagram 样式（帖子卡片 + 全屏查看 + 居民评论）
    ========================================================================== */
+/* 短视频文件：file = 一个视频（组员上传的），否则 short-编号-zh.mp4 / -ko.mp4 跟着语言换 */
+const shortSrc = (c, v, lang) => img(c, v.file || `short-${v.no}-${lang || 'zh'}.mp4`);
+const shortPoster = (c, v) => img(c, v.poster || `short-${v.no}-poster.jpg`);
 const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
 /* 给一个 .reel 加上手势：单击 / 双击 / 长按拖动调进度
@@ -1399,7 +1418,7 @@ function initShorts(c) {
       list.innerHTML = `
         <div class="cmt cmt--cap">
           <img class="cmt__avatar" src="${hero(c)}" alt="">
-          <div class="cmt__body"><p><b>${L(c.name)}</b> ${L(v.desc)}</p><span class="cmt__meta">♫ ${v.music || ''}</span></div>
+          <div class="cmt__body"><p><b>${L(c.name)}</b> ${L(v.desc)}</p><span class="cmt__meta">♫ ${L(v.music || '')}</span></div>
         </div>
         ${(v.comments || []).map((m, k) => row(m.who, m.text, m.likes, `c${k}`) + (m.reply ? row(c.id, m.reply, 0, `r${k}`, true) : '')).join('')}
         ${s.mine.map((t, k) => `
@@ -1418,16 +1437,17 @@ function initShorts(c) {
       el.classList.toggle('is-sheet', !!sheet);
       $('.igv__head', el).innerHTML = `
         <img class="ig__avatar" src="${hero(c)}" alt="">
-        <div class="ig__who"><b>${L(c.name)}</b><span class="ig__music">♫ ${v.music || ''}</span></div>`;
-      $('.igv__overlay-cap', el).innerHTML = `<b>${L(c.name)}</b> ${L(v.title)}<span>♫ ${v.music || ''}</span>`;
+        <div class="ig__who"><b>${L(c.name)}</b><span class="ig__music">♫ ${L(v.music || '')}</span></div>`;
+      $('.igv__overlay-cap', el).innerHTML = `<b>${L(c.name)}</b> ${L(v.title)}<span>♫ ${L(v.music || '')}</span>`;
       $('.igv__input', el).placeholder = tx({ zh: `以「我」的身份给${c.name.zh}留言…`, ko: `${c.name.ko}에게 댓글 남기기…` });
       $('.igv__post', el).textContent = tx({ zh: '发布', ko: '게시' });
       $$('.igv__nav', el).forEach(b => { b.hidden = shorts.length < 2; });
       this.renderList();
       refresh(i);
       const video = this.video;
-      video.src = img(c, `short-${v.no}-${lang}.mp4`);
-      video.poster = img(c, `short-${v.no}-poster.jpg`);
+      video.src = shortSrc(c, v, lang);
+      video.poster = shortPoster(c, v);
+      this.reel.classList.toggle('reel--contain', v.fit === 'contain');
       video.muted = keepSound ? wasMuted : false;     // 进入全屏默认打开声音（和 Instagram 一样）
       video.addEventListener('loadedmetadata', () => { try { video.currentTime = t; } catch (e) { /* 忽略 */ } }, { once: true });
       video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });

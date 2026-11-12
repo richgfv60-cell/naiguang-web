@@ -903,6 +903,16 @@ html.js .ch-hero__img { animation-name: rise-img; animation-delay: .25s; }
 .reel.is-scrub .reel__sound { opacity: 0; }
 .reel.is-scrub::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 60%, rgba(0, 0, 0, .35)); pointer-events: none; }
 
+/* 横版或非 9:16 的视频：完整显示，不裁切 */
+.reel--contain .reel__video { object-fit: contain; }
+/* 还没交视频的占位卡 */
+.reel--pending { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; cursor: default; text-align: center;
+  background: repeating-linear-gradient(-45deg, var(--c-tint) 0 18px, #fff 18px 36px); }
+.reel--pending img { width: 42%; opacity: .45; filter: grayscale(.4); }
+.reel--pending p { font-size: 18px; font-weight: 700; color: var(--c-deep); }
+.reel--pending span { font-size: 13px; color: var(--ink-2); }
+.ig--pending { padding-bottom: 6px; }
+
 /* —— 全屏查看（点帖子进入） —— */
 html.igv-lock, html.igv-lock body { overflow: hidden; }
 .igv { position: fixed; inset: 0; z-index: 250; display: grid; place-items: center; background: rgba(12, 10, 16, .82); opacity: 0; visibility: hidden; transition: opacity .3s var(--ease), visibility .3s; }
