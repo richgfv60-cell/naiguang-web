@@ -41,6 +41,8 @@ function Llist(v, render, tag = 'div', cls = '') {
     `<${tag} class="l-${k}${cls ? ' ' + cls : ''}" lang="${k === 'ko' ? 'ko' : 'zh-CN'}">${v[k].map(render).join('')}</${tag}>`
   ).join('');
 }
+/* 小应用的文字是 [中文, 한국어] 数组，转成 {zh, ko} */
+function arr2(v) { return Array.isArray(v) ? { zh: v[0], ko: v[1] } : v; }
 function tx(v) { return v == null ? '' : typeof v === 'object' ? v[getLang()] : String(v); }
 function both(v) { return typeof v === 'object' ? `${v.zh} ${v.ko}` : String(v); }
 
@@ -153,6 +155,7 @@ function renderNav(prefix = '') {
       <nav class="nav__links" aria-label="主导航">
         <a href="${prefix}#world">${L(n.world)}</a>
         <a href="${prefix}#characters">${L(n.characters)}</a>
+        <a href="${prefix}#apps">${L({ zh: '应用', ko: '앱' })}</a>
         <a href="${prefix}#making">${L(n.making)}</a>
         <a href="${prefix}#team">${L(n.team)}</a>
       </nav>
@@ -507,6 +510,27 @@ function renderHome() {
       </div>
     </div>
   </section>
+
+  <!-- ============ 9. 小镇应用（第 4 周：用角色做我的应用） ============ -->
+  ${typeof APPS === 'object' ? `
+  <section class="section section--white" id="apps">
+    <div class="container">
+      <span class="eyebrow" data-reveal style="--c-deep:#B07A6C">${L({ zh: '小镇应用', ko: '마을 앱' })}</span>
+      <h2 class="headline" data-reveal>${L({ zh: '居民们，<br>走进你的一天。', ko: '주민들이<br>너의 하루로 들어가요.' })}</h2>
+      <p class="lead" data-reveal>${L({ zh: '每位居民都有自己的房间，里面挂着一个记录型应用和一个游戏型小应用。可以添加到手机主屏幕，记录只保存在你的手机里。', ko: '주민마다 자기 방이 있고, 기록형 앱 하나와 놀이형 미니앱 하나가 걸려 있어요. 홈 화면에 추가할 수 있고, 기록은 내 폰에만 저장돼요.' })}</p>
+      <div class="apps-grid block-gap">
+        ${CHARACTERS.map((c, i) => APPS[c.id] ? `
+          <a class="app-room" href="characters/${c.id}/" data-reveal style="--d:${(i % 4) * 0.06}s;--c-tint:${c.tint};--c-deep:${c.deep}">
+            <img class="app-room__icon" src="characters/${c.id}/icon-192.png" alt="" loading="lazy">
+            <div class="app-room__text">
+              <b>${L(c.name)}${L({ zh: '的房间', ko: '의 방' })}</b>
+              <span>${L(arr2(APPS[c.id].appA.name))} · ${L(arr2(APPS[c.id].appB.name))}</span>
+            </div>
+            <span class="app-room__go">›</span>
+          </a>` : '').join('')}
+      </div>
+    </div>
+  </section>` : ''}
 
   <!-- ============ 10. 幕后 ============ -->
   <section class="section section--white" id="making" style="--c-deep:#B07A6C;--c-tint:#F9DFDA">
@@ -1075,6 +1099,25 @@ function renderCharacter() {
             </article>`).join('')}
         </div>
         ${c.shortsCredit ? `<p class="shorts__credit">${c.shortsCredit}</p>` : ''}
+      </div>
+    </section>` : ''}
+
+    <!-- 10.5 角色的小应用（第 4 周） -->
+    ${typeof APPS === 'object' && APPS[c.id] ? `
+    <section class="section section--white" id="apps">
+      <div class="container">
+        <span class="eyebrow" data-reveal>${L({ zh: '角色的小应用', ko: '캐릭터 미니앱' })}</span>
+        <h2 class="headline" data-reveal>${L({ zh: '走进我的一天。', ko: '나의 하루 속으로.' })}</h2>
+        <p class="lead" data-reveal>「${L(arr2(APPS[c.id].sentence))}」</p>
+        <div class="apps-grid apps-grid--2 block-gap">
+          ${[['a', APPS[c.id].appA, 'happy', { zh: '实操 1 · 记录型', ko: '실습 1 · 기록형' }], ['b', APPS[c.id].appB, 'proud', { zh: '实操 2 · 游戏型', ko: '실습 2 · 놀이형' }]].map(([k, a, f, tag], i) => `
+            <a class="app-room" href="characters/${c.id}/app-${k}/" data-reveal style="--d:${i * 0.08}s">
+              <img class="app-room__icon app-room__icon--face" src="assets/${c.id}/face/${f}.png" alt="" loading="lazy">
+              <div class="app-room__text"><small>${L(tag)}</small><b>${L({ zh: a.name[0], ko: a.name[1] })}</b><span>${L({ zh: a.sub[0], ko: a.sub[1] })}</span></div>
+              <span class="app-room__go">›</span>
+            </a>`).join('')}
+        </div>
+        <a class="btn-room" href="characters/${c.id}/" data-reveal>${L({ zh: '进入我的房间 · 添加到主屏幕', ko: '내 방으로 · 홈 화면에 추가' })} ›</a>
       </div>
     </section>` : ''}
 

@@ -1077,3 +1077,25 @@ a.next-link:hover { transform: translateY(-4px); }
   .ch-hero__line { opacity: 1; margin-top: 28px; font-size: clamp(22px, 3vw, 36px); }
   .ch-hero__img { margin-top: 28px; }
 }
+
+/* ---------- 小镇应用（第 4 周） ---------- */
+.apps-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+@media (max-width: 733px) { .apps-grid { grid-template-columns: 1fr; } }
+.app-room {
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 22px;
+  background: var(--card); box-shadow: 0 2px 14px rgba(0, 0, 0, .05); min-height: 88px;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+.section--white .app-room { background: var(--bg); box-shadow: none; }
+.app-room:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 0, 0, .07); }
+.app-room__icon { width: 60px; height: 60px; border-radius: 16px; flex: none; }
+.app-room__icon--face { object-fit: contain; background: var(--c-tint); padding: 4px; }
+.app-room__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.app-room__text b { font-size: 18px; color: var(--ink); }
+.app-room__text > span, .app-room__text > small { color: var(--ink-2); font-size: 14px; }
+.app-room__text > small { color: var(--c-deep); font-weight: 600; font-size: 12px; }
+.app-room__go { font-size: 26px; color: var(--c-deep); }
+.btn-room {
+  display: inline-flex; align-items: center; min-height: 48px; margin-top: 18px; padding: 0 22px; border-radius: 24px;
+  background: var(--c-deep); color: #fff; font-weight: 600;
+}
