@@ -2,7 +2,7 @@
    - 网页 / 脚本：先走网络，拿不到再用缓存（保证更新后马上看到新版）
    - 图片：先用缓存，没有再下载
    - 视频不缓存（太大） */
-const CACHE = 'ngw-20261117b';
+const CACHE = 'ngw-20261117c';
 const CORE = ['data.js', 'app/core.css', 'app/core.js', 'app/chars.js', 'app/record.js', 'app/game.js', 'app/room.js'];
 
 self.addEventListener('install', e => {
