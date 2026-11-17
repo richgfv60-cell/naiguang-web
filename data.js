@@ -356,7 +356,17 @@ const CHARACTERS = [
     ],
     /* 竖屏短视频（第 3 周，组员上传） */
     shorts: [
-      { no: '01', file: 'short-01.mp4', poster: 'short-01-poster.jpg', fit: 'contain', likes: 172, music: { zh: '原创音频', ko: '오리지널 오디오' },
+      { no: '01', file: 'short-01.mp4', poster: 'short-01-poster.jpg', likes: 156, music: { zh: '原创音频', ko: '오리지널 오디오' },
+        type: { zh: '竖屏短视频', ko: '세로 숏폼' },
+        title: { zh: '夜巡城墙的侦查员', ko: '밤에 성벽을 순찰하는 정찰병' },
+        desc: { zh: '戴上头灯，爬上城墙，在月光下把整座小镇看一遍。', ko: '헤드램프를 켜고 성벽에 올라 달빛 아래 마을을 둘러본다.' },
+        comments: [
+          {who: 'naixiong', likes: 21, text: {zh: '城墙那么高，下次叫上我，我在下面接着你。', ko: '성벽 그렇게 높은데, 다음엔 나도 불러. 아래서 받쳐 줄게.'}, reply: {zh: '……才不需要。不过，可以考虑。', ko: '……필요 없거든. 그래도, 생각은 해 볼게.'}},
+          {who: 'naitu', likes: 18, text: {zh: '一个人巡逻辛苦了，回来给你留了热可可 🤍', ko: '혼자 순찰하느라 수고했어, 코코아 남겨 뒀어 🤍'}},
+          {who: 'naiqi', likes: 14, text: {zh: '夜巡不在作息表上。下次提前报备，我给你排进日程。⏰', ko: '밤 순찰은 일정표에 없어. 다음엔 미리 말해 줘, 일정에 넣어 줄게. ⏰'}},
+          {who: 'naixiaoxiongmao', likes: 9, text: {zh: '「月光下的夜巡」已记进小故事本。头灯是新买的吗？📒', ko: '‘달빛 아래 순찰’ 이야기 노트에 기록 완료. 헤드램프 새로 산 거야? 📒'}}
+        ] },
+      { no: '02', file: 'short-02.mp4', poster: 'short-02-poster.jpg', fit: 'contain', likes: 172, music: { zh: '原创音频', ko: '오리지널 오디오' },
         type: { zh: 'Reels 漫画', ko: '릴스툰' },
         title: { zh: '我的牙有点松……', ko: '이가 좀 흔들려요…' },
         desc: { zh: '把四格「看牙」做成会动的 Reels：会不会很疼？……谢谢，我又敢吃饭啦！', ko: '4컷 ‘치과’를 움직이는 릴스툰으로: 아프진 않을까? ……감사해요, 다시 밥 먹을 수 있어요!' },
