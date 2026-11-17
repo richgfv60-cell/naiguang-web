@@ -1158,8 +1158,10 @@ function renderCharacter() {
    短视频 · Instagram 样式（帖子卡片 + 全屏查看 + 居民评论）
    ========================================================================== */
 /* 短视频文件：file = 一个视频（组员上传的），否则 short-编号-zh.mp4 / -ko.mp4 跟着语言换 */
-const shortSrc = (c, v, lang) => img(c, v.file || `short-${v.no}-${lang || 'zh'}.mp4`);
-const shortPoster = (c, v) => img(c, v.poster || `short-${v.no}-poster.jpg`);
+/* 文件改名或替换后，浏览器可能还在用旧的缓存。改了视频就把这个数字改大一点 */
+const ASSET_V = '20261117';
+const shortSrc = (c, v, lang) => img(c, v.file || `short-${v.no}-${lang || 'zh'}.mp4`) + `?v=${ASSET_V}`;
+const shortPoster = (c, v) => img(c, v.poster || `short-${v.no}-poster.jpg`) + `?v=${ASSET_V}`;
 const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
 /* 给一个 .reel 加上手势：单击 / 双击 / 长按拖动调进度
