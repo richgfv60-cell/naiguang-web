@@ -441,34 +441,6 @@ function renderHome() {
     </div>
   </section>
 
-  <!-- ============ 6. 平台 ============ -->
-  <section class="section section--white" id="platform" style="--c-deep:#5E6E8C;--c-tint:#DCE3EF">
-    <div class="container">
-      <span class="eyebrow" data-reveal>${L({ zh: '平台', ko: '플랫폼' })}</span>
-      <h2 class="headline headline--md" data-reveal>${L(F.summary)}</h2>
-      <div class="grid-3 block-gap">
-        ${F.stats.map((s, i) => `
-          <div data-reveal style="--d:${i * 0.08}s">
-            <div class="stat__big">${L(s.big)}</div>
-            <div class="stat__label">${L(s.label)}</div>
-          </div>`).join('')}
-      </div>
-      <p class="lead" data-reveal>${L({ zh: '亮点：', ko: '하이라이트: ' })}<strong>${L(F.highlight)}</strong></p>
-      <div class="killer block-gap" data-reveal="scale">
-        <span class="eyebrow">${L({ zh: '杀手功能', ko: '킬러 기능' })}</span>
-        <div class="killer__name">「${L(F.killerName)}」</div>
-        <p class="killer__text">${L(F.killer)}</p>
-      </div>
-      <div class="steps block-gap">
-        ${F.steps.map((s, i) => `
-          <div class="panel step" data-reveal style="--d:${i * 0.1}s">
-            <div class="step__no">${L({ zh: '扩展顺序', ko: '확장 순서' })} ${i + 1}</div>
-            <div class="panel__title">${L(s)}</div>
-          </div>`).join('')}
-      </div>
-    </div>
-  </section>
-
   <!-- ============ 7. 小镇日常十件事 ============ -->
   <section class="section" id="daily">
     <div class="container--wide">
