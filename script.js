@@ -16,6 +16,9 @@ const byId = id => CHARACTERS.find(c => c.id === id);
 /* 图片路径 */
 const img = (c, file) => `assets/${c.id}/${file}`;
 const hero = c => img(c, 'hero.png');
+/* 团队官方 Instagram 账号 */
+const IG_HANDLE = 'zebra.67638086';
+const IG_URL = `https://www.instagram.com/${IG_HANDLE}/`;
 
 /* --------------------------------------------------------------------------
    语言
@@ -465,6 +468,20 @@ function renderHome() {
             <div class="step__no">${L({ zh: '扩展顺序', ko: '확장 순서' })} ${i + 1}</div>
             <div class="panel__title">${L(s)}</div>
           </div>`).join('')}
+      </div>
+      <!-- 官方 Instagram 账号 -->
+      <div class="insta block-gap" data-reveal="scale">
+        <div class="insta__info">
+          <span class="insta__badge"><i class="insta__logo" aria-hidden="true"></i>Instagram</span>
+          <a class="insta__handle" href="${IG_URL}" target="_blank" rel="noopener">@${IG_HANDLE}</a>
+          <p class="insta__text">${L({ zh: '八位居民都住在这个账号里。每周二·五更新 1:1 四格漫画和会动的表情包，「${F.killerName.zh}」也在这里开放。', ko: '여덟 주민이 모두 이 계정에 살아요. 매주 화·금 1:1 정사각 만화와 움직이는 이모티콘을 올리고, 「${F.killerName.ko}」도 여기서 열려요.' })}</p>
+          <div class="insta__faces" aria-hidden="true">${CHARACTERS.map(c => `<img src="${img(c, 'face/happy.png')}" alt="" loading="lazy" style="--t:${c.tint}">`).join('')}</div>
+          <a class="insta__btn" href="${IG_URL}" target="_blank" rel="noopener">${L({ zh: '在 Instagram 关注我们', ko: '인스타그램에서 팔로우' })} <span aria-hidden="true">↗</span></a>
+        </div>
+        <a class="insta__qr" href="${IG_URL}" target="_blank" rel="noopener" aria-label="Instagram @${IG_HANDLE}">
+          <img src="assets/town/instagram-qr.png" alt="Instagram QR @${IG_HANDLE}" loading="lazy">
+          <span>${L({ zh: '手机扫码关注', ko: '휴대폰으로 스캔' })}</span>
+        </a>
       </div>
     </div>
   </section>
