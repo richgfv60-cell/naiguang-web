@@ -546,6 +546,16 @@ function renderHome() {
             <span class="app-room__go">›</span>
           </a>` : '').join('')}
       </div>
+      <div class="trip-card block-gap" data-reveal="scale">
+        <img src="trip/icon-192.png" alt="" loading="lazy">
+        <div class="trip-card__t">
+          <small>${L({ zh: '小游戏 · 放置旅行', ko: '미니게임 · 방치형 여행' })}</small>
+          <b>${L({ zh: '奶油镇 · 出门去', ko: '크림 마을 · 다녀올게' })}</b>
+          <span>${L({ zh: '选一位居民住进手机。收三叶草、准备便当，TA 会自己出门旅行，寄明信片、带特产回来。', ko: '주민 한 명을 골라 폰에 데려와요. 클로버를 모아 도시락을 챙겨 주면 혼자 여행을 떠나 엽서와 기념품을 보내요.' })}</span>
+          <span class="trip-card__btns"><a class="trip-card__btn" href="trip/">${L({ zh: '网页版直接玩', ko: '웹에서 바로 하기' })} ›</a>
+          <a class="trip-card__btn trip-card__btn--ghost" href="trip/cream-trip.apk" download>${L({ zh: '下载安卓 APK', ko: '안드로이드 APK 받기' })} ↓</a></span>
+        </div>
+      </div>
     </div>
   </section>` : ''}
 

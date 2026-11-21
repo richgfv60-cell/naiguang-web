@@ -66,3 +66,11 @@
 - 表情 PNG：`assets/角色id/face/`（happy / proud / sad / surprised / sleep / love，从表情表裁出来的）
 - 新增角色或改应用名后，运行 `python3 tools/make_apps.py` 重新生成页面、图标和 manifest
 - 记录只存在使用者自己的手机里（localStorage），没有服务器，也不扣分
+
+## 小游戏「奶油镇 · 出门去」（放置旅行）
+
+- 网页版：`trip/`，安卓安装包：`trip/cream-trip.apk`（首页「小镇应用」里有入口）
+- 玩法：选一位居民 → 院子收三叶草 → 商店买便当（决定走多远）和道具（决定去哪里）→ 整理行李 → 居民自己出门，中途寄明信片，回来带特产
+- 设置里的「演示模式」：1 分钟变 1 秒，录视频用
+- 改目的地、道具、台词：只改 `trip/places.js`
+- 重新打 APK（需要 Android SDK）：`cd android && gradle assembleDebug`，产物在 `android/app/build/outputs/apk/debug/app-debug.apk`，再复制成 `trip/cream-trip.apk`。打包时会自动把 `trip/`、`data.js`、表情 PNG 拷进 APK

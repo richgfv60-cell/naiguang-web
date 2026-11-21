@@ -1,0 +1,35 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'town.cream.trip'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'town.cream.trip'
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+/* 把网站里的游戏文件拷进 APK：trip/ + data.js + app/chars.js + 表情 PNG + 两张小镇插画
+   （游戏只改网站这边的文件，打包时自动同步，不用复制两份） */
+def site = rootProject.file('..')
+def www = layout.buildDirectory.dir('generated/www')
+tasks.register('copyWeb', Sync) {
+    into www.map { it.dir('www') }
+    from(site) {
+        include 'trip/**', 'data.js', 'app/chars.js', 'assets/*/face/*.png', 'assets/town/forest.jpg', 'assets/town/night.jpg'
+        exclude 'trip/icon-full.png', 'trip/*.apk'
+    }
+}
+android.sourceSets.main.assets.srcDir(www)
+tasks.named('preBuild') { dependsOn 'copyWeb' }
