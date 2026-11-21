@@ -143,3 +143,5 @@ html:not([data-lang="ko"]) .lang span:first-child, html[data-lang="ko"] .lang sp
 .switch.on { background: var(--deep); }
 .switch.on::after { transform: translateX(20px); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+.ibtn.back { font-size: 28px; color: var(--deep); text-decoration: none; font-weight: 300; }

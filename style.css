@@ -1166,3 +1166,4 @@ a.next-link:hover { transform: translateY(-4px); }
 .trip-card__btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 22px; background: #6F9A57; color: #fff; font-weight: 700; font-size: 15px; }
 .trip-card__btn--ghost { background: #fff; color: #5C8447; box-shadow: inset 0 0 0 2px #A9C795; }
 @media (max-width: 733px) { .trip-card { flex-direction: column; align-items: flex-start; } .trip-card__btns, .trip-card__btn { width: 100%; justify-content: center; } }
+#game { scroll-margin-top: calc(var(--nav-h) + 20px); }

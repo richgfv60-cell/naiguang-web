@@ -159,6 +159,7 @@ function renderNav(prefix = '') {
         <a href="${prefix}#world">${L(n.world)}</a>
         <a href="${prefix}#characters">${L(n.characters)}</a>
         <a href="${prefix}#apps">${L({ zh: '应用', ko: '앱' })}</a>
+        <a href="${prefix}#game">${L({ zh: '小游戏', ko: '게임' })}</a>
         <a href="${prefix}#making">${L(n.making)}</a>
         <a href="${prefix}#team">${L(n.team)}</a>
       </nav>
@@ -535,6 +536,16 @@ function renderHome() {
       <span class="eyebrow" data-reveal style="--c-deep:#B07A6C">${L({ zh: '小镇应用', ko: '마을 앱' })}</span>
       <h2 class="headline" data-reveal>${L({ zh: '居民们，<br>走进你的一天。', ko: '주민들이<br>너의 하루로 들어가요.' })}</h2>
       <p class="lead" data-reveal>${L({ zh: '每位居民都有自己的房间，里面挂着一个记录型应用和一个游戏型小应用。可以添加到手机主屏幕，记录只保存在你的手机里。', ko: '주민마다 자기 방이 있고, 기록형 앱 하나와 놀이형 미니앱 하나가 걸려 있어요. 홈 화면에 추가할 수 있고, 기록은 내 폰에만 저장돼요.' })}</p>
+      <div class="trip-card block-gap" id="game" data-reveal="scale">
+        <img src="trip/icon-192.png" alt="" loading="lazy">
+        <div class="trip-card__t">
+          <small>${L({ zh: '小游戏 · 放置旅行', ko: '미니게임 · 방치형 여행' })}</small>
+          <b>${L({ zh: '奶油镇 · 出门去', ko: '크림 마을 · 다녀올게' })}</b>
+          <span>${L({ zh: '选一位居民住进手机。收三叶草、准备便当，TA 会自己出门旅行，寄明信片、带特产回来。', ko: '주민 한 명을 골라 폰에 데려와요. 클로버를 모아 도시락을 챙겨 주면 혼자 여행을 떠나 엽서와 기념품을 보내요.' })}</span>
+          <span class="trip-card__btns"><a class="trip-card__btn" href="trip/">${L({ zh: '网页版直接玩', ko: '웹에서 바로 하기' })} ›</a>
+          <a class="trip-card__btn trip-card__btn--ghost" href="trip/cream-trip.apk" download>${L({ zh: '下载安卓 APK', ko: '안드로이드 APK 받기' })} ↓</a></span>
+        </div>
+      </div>
       <div class="apps-grid block-gap">
         ${CHARACTERS.map((c, i) => APPS[c.id] ? `
           <a class="app-room" href="characters/${c.id}/" data-reveal style="--d:${(i % 4) * 0.06}s;--c-tint:${c.tint};--c-deep:${c.deep}">
@@ -545,16 +556,6 @@ function renderHome() {
             </div>
             <span class="app-room__go">›</span>
           </a>` : '').join('')}
-      </div>
-      <div class="trip-card block-gap" data-reveal="scale">
-        <img src="trip/icon-192.png" alt="" loading="lazy">
-        <div class="trip-card__t">
-          <small>${L({ zh: '小游戏 · 放置旅行', ko: '미니게임 · 방치형 여행' })}</small>
-          <b>${L({ zh: '奶油镇 · 出门去', ko: '크림 마을 · 다녀올게' })}</b>
-          <span>${L({ zh: '选一位居民住进手机。收三叶草、准备便当，TA 会自己出门旅行，寄明信片、带特产回来。', ko: '주민 한 명을 골라 폰에 데려와요. 클로버를 모아 도시락을 챙겨 주면 혼자 여행을 떠나 엽서와 기념품을 보내요.' })}</span>
-          <span class="trip-card__btns"><a class="trip-card__btn" href="trip/">${L({ zh: '网页版直接玩', ko: '웹에서 바로 하기' })} ›</a>
-          <a class="trip-card__btn trip-card__btn--ghost" href="trip/cream-trip.apk" download>${L({ zh: '下载安卓 APK', ko: '안드로이드 APK 받기' })} ↓</a></span>
-        </div>
       </div>
     </div>
   </section>` : ''}
