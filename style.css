@@ -1169,3 +1169,10 @@ a.next-link:hover { transform: translateY(-4px); }
 #game { scroll-margin-top: calc(var(--nav-h) + 20px); }
 
 .install-card { padding: 22px 22px 18px; }
+
+.trip-card__btn { border: 0; font: inherit; font-weight: 700; cursor: pointer; }
+.trip-card__btn--ghost[aria-expanded="true"] { background: #EEF5E8; }
+.trip-install { margin-top: 12px; padding: 14px 16px; border-radius: 18px; background: rgba(255, 255, 255, .75); }
+.trip-install[hidden] { display: none; }
+.trip-install ol { list-style: decimal; margin: 0; padding-left: 22px; color: var(--ink-2); line-height: 1.9; }
+.trip-install p { margin: 8px 0 12px; color: var(--ink-2); font-size: 14px; line-height: 1.6; }

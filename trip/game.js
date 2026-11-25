@@ -474,6 +474,8 @@
     document.addEventListener('visibilitychange', () => { if (!document.hidden) { tick(); render(); if (pendingBack) showBack(); } });
   }
 
+  /* 网页版：注册离线缓存，添加到主屏幕后断网也能玩 */
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register(ROOT + 'sw.js').catch(() => {});
   let saved = null; try { saved = localStorage.getItem('lang'); } catch (e) {}
   setLang(saved === 'ko' ? 'ko' : 'zh');
   S = load();

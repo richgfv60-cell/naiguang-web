@@ -543,7 +543,15 @@ function renderHome() {
           <b>${L({ zh: '奶油镇 · 出门去', ko: '크림 마을 · 다녀올게' })}</b>
           <span>${L({ zh: '选一位居民住进手机。收三叶草、准备便当，TA 会自己出门旅行，寄明信片、带特产回来。', ko: '주민 한 명을 골라 폰에 데려와요. 클로버를 모아 도시락을 챙겨 주면 혼자 여행을 떠나 엽서와 기념품을 보내요.' })}</span>
           <span class="trip-card__btns"><a class="trip-card__btn" href="trip/">${L({ zh: '网页版直接玩', ko: '웹에서 바로 하기' })} ›</a>
-          <a class="trip-card__btn trip-card__btn--ghost" href="trip/cream-trip.apk" download>${L({ zh: '下载安卓 APK', ko: '안드로이드 APK 받기' })} ↓</a></span>
+          <a class="trip-card__btn trip-card__btn--ghost" href="trip/cream-trip.apk" download>${L({ zh: '下载安卓 APK', ko: '안드로이드 APK 받기' })} ↓</a>
+          <button type="button" class="trip-card__btn trip-card__btn--ghost" data-trip-install aria-expanded="false">📲 ${L({ zh: '放到主屏幕', ko: '홈 화면에 추가' })}</button></span>
+          <div class="trip-install" hidden>
+            <ol>${/iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+              ? `<li>${L({ zh: '用 Safari 点下面的「打开游戏」', ko: 'Safari에서 아래 「게임 열기」 누르기' })}</li><li>${L({ zh: '点底部的「分享」按钮 ⬆️', ko: '아래쪽 「공유」 버튼 ⬆️ 누르기' })}</li><li>${L({ zh: '选「添加到主屏幕」', ko: '「홈 화면에 추가」 선택' })}</li>`
+              : `<li>${L({ zh: '用 Chrome 点下面的「打开游戏」', ko: 'Chrome에서 아래 「게임 열기」 누르기' })}</li><li>${L({ zh: '点右上角 ⋮ 菜单', ko: '오른쪽 위 ⋮ 메뉴' })}</li><li>${L({ zh: '选「添加到主屏幕」或「安装应用」', ko: '「홈 화면에 추가」 또는 「앱 설치」 선택' })}</li>`}</ol>
+            <p>${L({ zh: '主屏幕上会出现「出门去」图标，点开就是全屏的游戏，断网也能玩。安卓手机也可以直接下载上面的 APK。', ko: '홈 화면에 「出门去」 아이콘이 생기고, 누르면 전체 화면 게임이 열려요. 오프라인에서도 돼요. 안드로이드는 위의 APK를 받아도 돼요.' })}</p>
+            <a class="trip-card__btn" href="trip/">${L({ zh: '打开游戏', ko: '게임 열기' })} ›</a>
+          </div>
         </div>
       </div>
       <div class="apps-grid block-gap">
@@ -714,6 +722,9 @@ function renderHome() {
   /* 「放到手机主屏幕」卡片（app/install.js） */
   const ic = $('#installCard');
   if (ic && window.InstallCard) InstallCard(ic, { root: '' });
+  /* 游戏卡片：点「放到主屏幕」展开步骤 */
+  const tb = $('[data-trip-install]'), tp = $('.trip-install');
+  if (tb && tp) tb.addEventListener('click', () => { tp.hidden = !tp.hidden; tb.setAttribute('aria-expanded', String(!tp.hidden)); });
 }
 
 /* --------------------------------------------------------------------------
