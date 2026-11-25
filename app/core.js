@@ -170,7 +170,7 @@
     document.body.innerHTML = `
       <div class="app">
         <header class="bar">
-          <a class="bar__back" href="../" aria-label="返回房间 / 방으로">‹</a>
+          <a class="bar__back" href="../index.html" aria-label="返回房间 / 방으로">‹</a>
           <div class="bar__title">${L(appCfg.name)}<small>${L(c.name)} · ${L(appCfg.sub)}</small></div>
           ${opts.mute ? `<button class="bar__btn" data-mute aria-label="静音 / 음소거">${muted ? '🔇' : '🔊'}</button>` : ''}
           <button class="bar__btn lang" data-lang aria-label="切换语言 / 언어 변경"><span>中</span><span>한</span></button>

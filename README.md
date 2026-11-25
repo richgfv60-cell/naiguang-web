@@ -73,4 +73,6 @@
 - 玩法：选一位居民 → 院子收三叶草 → 商店买便当（决定走多远）和道具（决定去哪里）→ 整理行李 → 居民自己出门，中途寄明信片，回来带特产
 - 设置里的「演示模式」：1 分钟变 1 秒，录视频用
 - 改目的地、道具、台词：只改 `trip/places.js`
-- 重新打 APK（需要 Android SDK）：`cd android && gradle assembleDebug`，产物在 `android/app/build/outputs/apk/debug/app-debug.apk`，再复制成 `trip/cream-trip.apk`。打包时会自动把 `trip/`、`data.js`、表情 PNG 拷进 APK
+- 两个 APK：`trip/cream-trip.apk`（只有小游戏）、`download/cream-town.apk`（小镇应用：8 个房间 + 小游戏，打开后是 `apps.html`）
+- 重新打 APK（需要 Android SDK）：`cd android && gradle assembleTripDebug assembleTownDebug`，产物在 `android/app/build/outputs/apk/`，再分别复制到上面两个位置。打包时会自动把网页文件和表情 PNG 拷进 APK
+- `apps.html`：小镇应用合集页，可以「添加到主屏幕」；首页「小镇应用」下面的「放到手机主屏幕」卡片在 `app/install.js`

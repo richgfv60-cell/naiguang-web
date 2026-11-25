@@ -13,6 +13,8 @@
   const pick = arr => arr[Math.floor(Math.random() * arr.length)];
   const byId = (arr, id) => arr.find(x => x.id === id);
   const face = (id, f) => `${ROOT}assets/${id}/face/${f}.png`;
+  /* 「‹」回到哪里：网页版 → 网站首页；小镇应用 APK → 应用合集；单独的游戏 APK → 不显示 */
+  const HOME = window.AndroidBridge ? (AndroidBridge.home ? AndroidBridge.home() : '') : 'index.html#apps';
 
   /* —— 语言 —— */
   const lang = () => document.documentElement.dataset.lang === 'ko' ? 'ko' : 'zh';
@@ -182,7 +184,7 @@
     document.body.innerHTML = `
       <div class="game">
         <header class="top">
-          ${window.AndroidBridge ? '' : `<a class="ibtn back" href="${ROOT}index.html#apps" aria-label="回到网站首页 / 홈으로">‹</a>`}
+          ${!HOME ? '' : `<a class="ibtn back" href="${ROOT}${HOME}" aria-label="回到网站首页 / 홈으로">‹</a>`}
           <button class="who" data-act="settings"><img id="avatar" alt=""><b id="whoName"></b></button>
           <span class="pill">🍀 <span id="clover">0</span></span>
           <button class="ibtn" data-go="album" aria-label="明信片 / 엽서">📮<span class="badge" id="mailBadge" hidden></span></button>
@@ -415,7 +417,7 @@
     const box = document.createElement('div'); box.className = 'pick';
     const draw = () => {
       box.innerHTML = `<div class="pick__in">
-        <div style="display:flex;justify-content:space-between;align-items:center">${window.AndroidBridge ? '<span></span>' : `<a class="lang" href="${ROOT}index.html#apps" style="text-decoration:none;color:inherit">‹ ${L(['网站首页', '홈페이지'])}</a>`}<button class="lang" data-act="lang"><span>中</span><span>한</span></button></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">${!HOME ? '<span></span>' : `<a class="lang" href="${ROOT}${HOME}" style="text-decoration:none;color:inherit">‹ ${L(window.AndroidBridge ? ['小镇应用', '마을 앱'] : ['网站首页', '홈페이지'])}</a>`}<button class="lang" data-act="lang"><span>中</span><span>한</span></button></div>
         <img class="pick__banner" src="${ROOT}assets/town/forest.jpg" alt="">
         <h1>${L(TRIP.title)}</h1>
         <p>${L(['选一位居民住进你的手机。收三叶草、准备便当，TA 会自己出门旅行，从远方寄明信片回来。', '주민 한 명을 골라 폰에 데려와요. 클로버를 모아 도시락을 챙겨 주면, 혼자 여행을 떠나 먼 곳에서 엽서를 보내요.'])}</p>

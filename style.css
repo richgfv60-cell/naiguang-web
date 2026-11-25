@@ -1167,3 +1167,5 @@ a.next-link:hover { transform: translateY(-4px); }
 .trip-card__btn--ghost { background: #fff; color: #5C8447; box-shadow: inset 0 0 0 2px #A9C795; }
 @media (max-width: 733px) { .trip-card { flex-direction: column; align-items: flex-start; } .trip-card__btns, .trip-card__btn { width: 100%; justify-content: center; } }
 #game { scroll-margin-top: calc(var(--nav-h) + 20px); }
+
+.install-card { padding: 22px 22px 18px; }

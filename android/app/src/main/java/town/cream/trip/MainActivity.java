@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
         web.addJavascriptInterface(new Bridge(), "AndroidBridge");
         setContentView(web);
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
-        else web.loadUrl("file:///android_asset/www/trip/index.html");
+        else web.loadUrl("file:///android_asset/www/" + BuildConfig.START);
     }
 
     @Override
@@ -60,6 +60,10 @@ public class MainActivity extends Activity {
 
     /** 网页里点「保存图片」时，把明信片存进手机相册（Pictures/CreamTrip）。 */
     private class Bridge {
+        /** 网页里的「‹」要回到哪一页（小游戏 APK 里为空 = 不显示）。 */
+        @JavascriptInterface
+        public String home() { return BuildConfig.HOME; }
+
         @JavascriptInterface
         public boolean saveImage(String dataUrl) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return false;

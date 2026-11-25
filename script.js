@@ -557,6 +557,7 @@ function renderHome() {
             <span class="app-room__go">›</span>
           </a>` : '').join('')}
       </div>
+      <div class="panel install-card block-gap" id="installCard" data-reveal></div>
     </div>
   </section>` : ''}
 
@@ -710,6 +711,9 @@ function renderHome() {
   });
 
   initCastInteract();
+  /* 「放到手机主屏幕」卡片（app/install.js） */
+  const ic = $('#installCard');
+  if (ic && window.InstallCard) InstallCard(ic, { root: '' });
 }
 
 /* --------------------------------------------------------------------------

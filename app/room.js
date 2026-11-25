@@ -43,7 +43,7 @@
   document.head.appendChild(st);
 
   const tile = (k, a, kind) => `
-    <a class="tile" href="app-${k}/">
+    <a class="tile" href="app-${k}/index.html">
       <span class="tile__icon"><img src="${face(k === 'a' ? 'happy' : 'proud')}" alt=""></span>
       <span class="tag">${k === 'a' ? L(T('实操 1 · 记录型', '실습 1 · 기록형')) : L(T('实操 2 · 游戏型', '실습 2 · 놀이형'))} · ${kind} ${L(KN[kind])}</span>
       <b>${L(a.name)}</b><span class="muted">${L(a.sub)}</span>
@@ -52,7 +52,7 @@
   document.body.innerHTML = `
     <div class="app">
       <header class="bar">
-        <a class="bar__back" href="${NG.ROOT}index.html#apps" aria-label="返回小镇应用 / 마을 앱으로">‹</a>
+        <a class="bar__back" href="${window.AndroidBridge ? NG.ROOT + 'apps.html' : NG.ROOT + 'index.html#apps'}" aria-label="返回小镇应用 / 마을 앱으로">‹</a>
         <div class="bar__title">${L(T('我的房间', '내 방'))}<small>${L(c.name)} · ${L(c.role)}</small></div>
         <button class="bar__btn lang" data-lang aria-label="切换语言 / 언어 변경"><span>中</span><span>한</span></button>
       </header>

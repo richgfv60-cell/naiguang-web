@@ -1,0 +1,15 @@
+{
+  "name": "奶油动物镇 · 小镇应用 · 크림 마을 앱",
+  "short_name": "小镇应用",
+  "start_url": "apps.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FBF8F2",
+  "theme_color": "#FBF8F2",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "app/icons/town-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "app/icons/town-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "app/icons/town-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

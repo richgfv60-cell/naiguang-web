@@ -2,16 +2,38 @@ plugins {
     id 'com.android.application'
 }
 
+/* 一套代码打两个 APK：
+   - trip：小游戏「奶油镇·出门去」         → gradle assembleTripDebug
+   - town：小镇应用（8 个房间 + 小游戏）    → gradle assembleTownDebug */
 android {
     namespace 'town.cream.trip'
     compileSdk 35
 
     defaultConfig {
-        applicationId 'town.cream.trip'
         minSdk 24
         targetSdk 35
-        versionCode 1
-        versionName '1.0'
+        versionCode 2
+        versionName '1.1'
+    }
+
+    buildFeatures { buildConfig true }
+
+    flavorDimensions 'app'
+    productFlavors {
+        trip {
+            dimension 'app'
+            applicationId 'town.cream.trip'
+            resValue 'string', 'app_name', '奶油镇·出门去'
+            buildConfigField 'String', 'START', '"trip/index.html"'
+            buildConfigField 'String', 'HOME', '""'
+        }
+        town {
+            dimension 'app'
+            applicationId 'town.cream.apps'
+            resValue 'string', 'app_name', '奶油镇小应用'
+            buildConfigField 'String', 'START', '"apps.html"'
+            buildConfigField 'String', 'HOME', '"apps.html"'
+        }
     }
 
     compileOptions {
@@ -20,15 +42,16 @@ android {
     }
 }
 
-/* 把网站里的游戏文件拷进 APK：trip/ + data.js + app/chars.js + 表情 PNG + 两张小镇插画
-   （游戏只改网站这边的文件，打包时自动同步，不用复制两份） */
+/* 把网站里的文件拷进 APK（只改网站这边的文件，打包时自动同步）
+   视频和大图不打包，只要应用用到的：data.js、app/、characters/、trip/、表情 PNG、两张小镇插画 */
 def site = rootProject.file('..')
 def www = layout.buildDirectory.dir('generated/www')
 tasks.register('copyWeb', Sync) {
     into www.map { it.dir('www') }
     from(site) {
-        include 'trip/**', 'data.js', 'app/chars.js', 'assets/*/face/*.png', 'assets/town/forest.jpg', 'assets/town/night.jpg'
-        exclude 'trip/icon-full.png', 'trip/*.apk'
+        include 'apps.html', 'data.js', 'app/**', 'characters/**', 'trip/**',
+                'assets/*/face/*.png', 'assets/town/forest.jpg', 'assets/town/night.jpg'
+        exclude '**/*.apk', 'trip/icon-full.png', 'app/icons/town-full.png'
     }
 }
 android.sourceSets.main.assets.srcDir(www)

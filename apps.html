@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>小镇应用 · 奶油动物镇</title>
+  <meta name="theme-color" content="#FBF8F2">
+  <link rel="manifest" href="apps.webmanifest">
+  <link rel="icon" href="app/icons/town-192.png">
+  <link rel="apple-touch-icon" href="app/icons/town-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="小镇应用">
+  <link rel="stylesheet" href="app/core.css?v=20261125">
+  <style>
+    body { background: var(--bg); }
+    .hero { display: flex; gap: 14px; align-items: center; padding: 4px 4px 2px; }
+    .hero img { width: 64px; height: 64px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+    .hero b { font-size: 22px; display: block; }
+    .rooms { display: flex; flex-direction: column; gap: 10px; }
+    .room-link { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 20px; background: #fff; text-decoration: none; box-shadow: 0 1px 6px rgba(0,0,0,.04); }
+    .room-link img { width: 54px; height: 54px; border-radius: 14px; flex: none; }
+    .room-link b { display: block; font-size: 17px; }
+    .room-link span { font-size: 13px; color: var(--ink-2); }
+    .room-link i { margin-left: auto; font-style: normal; font-size: 24px; color: var(--c); }
+    .game { display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 20px; background: linear-gradient(135deg, #F4F9EC, #FDF3E4); text-decoration: none; }
+    .game img { width: 64px; height: 64px; border-radius: 16px; flex: none; }
+    .game b { display: block; font-size: 17px; }
+    .game span { font-size: 13px; color: var(--ink-2); }
+    .steps { margin: 8px 0 0; padding-left: 20px; color: var(--ink-2); font-size: 14px; line-height: 1.8; }
+    .apk { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  </style>
+</head>
+<!-- 小镇应用合集：8 位居民的房间 + 小游戏。可以添加到主屏幕；也是「小镇应用」APK 打开后的第一页 -->
+<body>
+  <noscript>请开启 JavaScript · JavaScript를 켜 주세요</noscript>
+  <script src="data.js?v=20261125"></script>
+  <script src="app/chars.js?v=20261125"></script>
+  <script src="app/install.js?v=20261125"></script>
+  <script>
+  (function () {
+    const inApk = !!window.AndroidBridge;
+    const L = v => { const o = Array.isArray(v) ? { zh: v[0], ko: v[1] } : v; return `<span class="l-zh">${o.zh}</span><span class="l-ko">${o.ko}</span>`; };
+    document.body.innerHTML = `
+      <div class="app">
+        <header class="bar">
+          ${inApk ? '<span class="bar__back"></span>' : '<a class="bar__back" href="index.html#apps" aria-label="网站首页 / 홈페이지">‹</a>'}
+          <div class="bar__title">${L(['小镇应用', '마을 앱'])}<small>${L(['奶油动物镇', '크림 동물 마을'])} · STUDIO NULL</small></div>
+          <button class="bar__btn lang" data-lang aria-label="切换语言 / 언어 변경"><span>中</span><span>한</span></button>
+        </header>
+        <main class="main">
+          <div class="hero"><img src="app/icons/town-192.png" alt=""><div><b>${L(['八位居民的小应用', '여덟 주민의 미니앱'])}</b><span class="muted">${L(['每个房间里有一个记录型应用和一个小游戏', '방마다 기록형 앱 하나와 미니게임 하나'])}</span></div></div>
+          <div class="rooms">${CHARACTERS.map(c => `
+            <a class="room-link" href="characters/${c.id}/index.html" style="--c:${c.deep}">
+              <img src="characters/${c.id}/icon-192.png" alt="">
+              <div><b>${L({ zh: c.name.zh + '的房间', ko: c.name.ko + '의 방' })}</b><span>${L([APPS[c.id].appA.name[0] + ' · ' + APPS[c.id].appB.name[0], APPS[c.id].appA.name[1] + ' · ' + APPS[c.id].appB.name[1]])}</span></div>
+              <i>›</i></a>`).join('')}</div>
+          <a class="game" href="trip/index.html"><img src="trip/icon-192.png" alt="">
+            <div><b>${L(['奶油镇 · 出门去', '크림 마을 · 다녀올게'])}</b><span>${L(['小游戏 · 放置旅行', '미니게임 · 방치형 여행'])}</span></div></a>
+          ${inApk ? '' : '<div class="card" id="install"></div>'}
+        </main>
+        <p class="privacy">${L(['记录只保存在这台手机里，不会上传。', '기록은 이 폰에만 저장되고 업로드되지 않아요.'])}</p>
+      </div>`;
+    const setLang = l => { document.documentElement.dataset.lang = l; document.documentElement.lang = l === 'ko' ? 'ko' : 'zh-CN'; try { localStorage.setItem('lang', l); } catch (e) {} };
+    let saved = null; try { saved = localStorage.getItem('lang'); } catch (e) {}
+    setLang(saved === 'ko' ? 'ko' : 'zh');
+    document.querySelector('button[data-lang]').addEventListener('click', () => setLang(document.documentElement.dataset.lang === 'ko' ? 'zh' : 'ko'));
+    if (!inApk) InstallCard(document.getElementById('install'), { root: '' });
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  })();
+  </script>
+</body>
+</html>
