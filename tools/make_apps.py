@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-V = '20261129d'
+V = '20261129e'
 
 data_js = (ROOT / 'data.js').read_text(encoding='utf-8')
 chars_js = (ROOT / 'app/chars.js').read_text(encoding='utf-8')
@@ -30,7 +30,7 @@ def app_names(cid):
     block = chars_js[start: start + 5 + (nxt.start() if nxt else len(chars_js))]
     out = []
     for k in 'ABCD':
-        m = re.search(r"app" + k + r": \{ mode: '(\w+)',(?: kind: '(\w+)',)?(?: by: '\w+',)? name: \['([^']+)', '([^']+)'\]", block)
+        m = re.search(r"app" + k + r": \{ mode: '(\w+)',(?: kind: '(\w+)',)?(?: (?:by|idea): '\w+',)? name: \['([^']+)', '([^']+)'\]", block)
         if not m: continue
         kind = m[2] or ('record' if k == 'A' else 'game')
         out.append((k.lower(), m[1], m[3], m[4], 'app/record.js' if kind == 'record' else 'app/game.js'))

@@ -49,7 +49,7 @@ const APPS = {
     appA: { mode: 'todo', name: ['侦查清单', '수사 체크리스트'], sub: ['待办笔记', '할 일 노트'] },
     appB: { mode: 'reaction', name: ['喷嚏反应', '재채기 반응'], sub: ['反应速度测试', '반응속도 테스트'] },
     /* 岳耀森的想法：记录睡眠 */
-    appC: { mode: 'sleep', kind: 'record', by: 'naimao', name: ['睡眠侦查', '수면 수사'], sub: ['睡眠记录', '수면 기록'],
+    appC: { mode: 'sleep', kind: 'record', idea: 'naimao', name: ['睡眠侦查', '수면 수사'], sub: ['睡眠记录', '수면 기록'],
       intro: {
         cards: [
           [['本侦查员要查你的睡眠', '수사관이 네 수면을 조사할게'], ['哼，熬夜的线索，我一眼就能看出来。', '흥, 밤샘의 단서는 한눈에 보여.']],
@@ -103,7 +103,7 @@ const APPS = {
     appA: { mode: 'habit', name: ['今日打卡', '오늘의 체크'], sub: ['每日习惯打卡', '하루 습관 체크'] },
     appB: { mode: 'match', name: ['整理翻牌', '정리 카드 짝'], sub: ['翻牌配对', '카드 짝 맞추기'] },
     /* 陈舒新的想法：冰面上跳一下，踩过的冰块会消失 */
-    appC: { mode: 'ice', kind: 'game', by: 'naiqi', name: ['冰面跳一跳', '빙판 점프'], sub: ['踩过的冰块会消失', '밟은 얼음은 사라져'],
+    appC: { mode: 'ice', kind: 'game', idea: 'naiqi', name: ['冰面跳一跳', '빙판 점프'], sub: ['踩过的冰块会消失', '밟은 얼음은 사라져'],
       game: {
         ready: ['每块冰只能踩一次，踩过就会融化。规划好路线，把冰面上的冰块全部踩完 ⏰', '얼음은 한 번만 밟을 수 있고, 밟으면 녹아. 길을 계획해서 얼음을 모두 밟자 ⏰'],
         step: [['按计划前进。', '계획대로 전진.'], ['这一步，准时。', '이 걸음, 정시.'], ['冰块记录完毕 ⏰', '얼음 기록 완료 ⏰'], ['下一块在哪里？', '다음 얼음은 어디지?']],
@@ -143,7 +143,7 @@ const APPS = {
   naihaibao: {
     sentence: ['奶海豹在我每喝一杯水时递上云朵热饮，喝够了就冒出彩色气泡。', '우유 물범은 내가 물을 한 잔 마실 때마다 구름 음료를 건네고, 다 마시면 무지개 거품을 뿜어요.'],
     appA: { mode: 'water', name: ['云朵热饮', '구름 음료'], sub: ['喝水记录', '물 마시기'] },
-    appB: { mode: 'hop', by: 'naihaibao', name: ['焦虑跳一跳', '불안 점프'], sub: ['按住蓄力，跳过去', '꾹 눌러서 뛰어넘기'] },
+    appB: { mode: 'hop', idea: 'naihaibao', name: ['焦虑跳一跳', '불안 점프'], sub: ['按住蓄力，跳过去', '꾹 눌러서 뛰어넘기'] },
     intro: {
       cards: [
         [['别紧张啦～', '긴장하지 마~'], ['我是湖边小露台的奶海豹，手里的云朵杯永远不会凉。', '호숫가 테라스의 우유 물범이야. 내 구름 컵은 절대 식지 않아.']],
@@ -261,7 +261,7 @@ const APPS = {
     appA: { mode: 'focus', name: ['守护专注', '집중 지킴이'], sub: ['专注计时', '집중 타이머'] },
     appB: { mode: 'catch', name: ['软垫接接乐', '쿠션 받기'], sub: ['接掉落物', '떨어지는 아이템 받기'] },
     /* 董昊鑫的想法：记录角色的日常、故事、心情，并和社交账号联动 */
-    appC: { mode: 'feed', kind: 'record', by: 'naixiong', name: ['小石屋日记', '돌집 일기'], sub: ['日常 · 故事 · 心情 · 社交', '일상 · 이야기 · 기분 · SNS'],
+    appC: { mode: 'feed', kind: 'record', idea: 'naixiong', name: ['小石屋日记', '돌집 일기'], sub: ['日常 · 故事 · 心情 · 社交', '일상 · 이야기 · 기분 · SNS'],
       social: 'zebra.67638086',
       intro: {
         cards: [
@@ -313,7 +313,7 @@ const APPS = {
     appA: { mode: 'diary', name: ['小故事日记', '이야기 일기'], sub: ['一句话日记 + 月历', '한 줄 일기 + 달력'] },
     appB: { mode: 'quiz', name: ['你是小镇里的谁', '나는 마을의 누구'], sub: ['性格测试', '성격 테스트'] },
     /* 陶朝伟的想法：贪吃蛇。蛇头是奶小熊猫，身体是一串圆球，去吃苹果 */
-    appC: { mode: 'snake', kind: 'game', by: 'naixiaoxiongmao', name: ['小熊猫吃苹果', '레서판다 사과 먹기'], sub: ['贪吃蛇', '스네이크 게임'],
+    appC: { mode: 'snake', kind: 'game', idea: 'naixiaoxiongmao', name: ['小熊猫吃苹果', '레서판다 사과 먹기'], sub: ['贪吃蛇', '스네이크 게임'],
       game: {
         ready: ['滑动屏幕或按方向键，带奶小熊猫去吃苹果 🍎 每吃一个，身后就多一颗小球。别撞到墙和自己哦！', '화면을 밀거나 방향 버튼으로 우유 레서판다를 사과 🍎 쪽으로! 하나 먹을 때마다 뒤에 공이 하나 늘어. 벽과 내 몸에 부딪히지 마!'],
         eat: [['好吃！这个要记进本子 📒', '맛있다! 노트에 적어야지 📒'], ['又收集到一个！', '또 하나 모았어!'], ['苹果的故事 +1 🍎', '사과 이야기 +1 🍎'], ['跟上跟上，小球们！', '따라와, 공들아!']],
@@ -390,10 +390,16 @@ const APPS = {
 const APP_LEADER = 'naitu';   // 组长 = 奶兔的设计者
 /* 这些角色的应用是组员自己的想法：房间里所有应用都署组员本人（奶兔是组长自己的） */
 const APP_OWN = ['naiqi', 'naihaibao', 'naixiong'];
-APP_OWN.forEach(id => ['appA', 'appB', 'appC', 'appD'].forEach(k => { if (APPS[id][k] && !APPS[id][k].by) APPS[id][k].by = id; }));
+APP_OWN.forEach(id => ['appA', 'appB', 'appC', 'appD'].forEach(k => { if (APPS[id][k] && !APPS[id][k].by && !APPS[id][k].idea) APPS[id][k].by = id; }));
+/* idea: 组员出的创意、由组长和 Claude 做出来 → 「创意：组员 · 制作：组长」 */
 function appCredit(app) {
-  const id = (app && app.by) || APP_LEADER;
-  const m = CHARACTERS.find(c => c.id === id).member;
+  const mem = id => CHARACTERS.find(c => c.id === id).member;
+  const lead = mem(APP_LEADER);
+  if (app && app.idea) {
+    const m = mem(app.idea);
+    return { zh: `创意：${m.zh} · 制作：${lead.zh}（组长）`, ko: `아이디어: ${m.ko} · 제작: ${lead.ko} (조장)` };
+  }
+  const id = (app && app.by) || APP_LEADER, m = mem(id);
   return id === APP_LEADER
     ? { zh: `制作：${m.zh}（组长）`, ko: `제작: ${m.ko} (조장)` }
     : { zh: `制作：${m.zh}`, ko: `제작: ${m.ko}` };
