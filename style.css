@@ -1184,3 +1184,5 @@ a.next-link:hover { transform: translateY(-4px); }
 .panel__ig .insta__logo { width: 18px; height: 18px; border-radius: 6px; background: rgba(255, 255, 255, .25); }
 .panel__ig .insta__logo::before { inset: 4px; }
 .panel__ig .insta__logo::after { top: 3px; right: 3px; }
+
+.app-room__by { font-style: normal; font-size: 12px; font-weight: 700; color: var(--c-deep); opacity: .75; margin-top: 2px; }

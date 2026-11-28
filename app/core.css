@@ -197,3 +197,5 @@ textarea.input { resize: none; min-height: 88px; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   .star { display: none; }
 }
+
+.privacy .credit { display: inline-block; margin-top: 4px; font-weight: 700; color: var(--deep); opacity: .8; }

@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="小镇应用">
-  <link rel="stylesheet" href="app/core.css?v=20261128">
+  <link rel="stylesheet" href="app/core.css?v=20261129">
   <style>
     body { background: var(--bg); }
     .hero { display: flex; gap: 14px; align-items: center; padding: 4px 4px 2px; }
@@ -34,9 +34,9 @@
 <!-- 小镇应用合集：8 位居民的房间 + 小游戏。可以添加到主屏幕；也是「小镇应用」APK 打开后的第一页 -->
 <body>
   <noscript>请开启 JavaScript · JavaScript를 켜 주세요</noscript>
-  <script src="data.js?v=20261128"></script>
-  <script src="app/chars.js?v=20261128"></script>
-  <script src="app/install.js?v=20261128"></script>
+  <script src="data.js?v=20261129"></script>
+  <script src="app/chars.js?v=20261129"></script>
+  <script src="app/install.js?v=20261129"></script>
   <script>
   (function () {
     const inApk = !!window.AndroidBridge;
@@ -53,7 +53,7 @@
           <div class="rooms">${CHARACTERS.map(c => `
             <a class="room-link" href="characters/${c.id}/index.html" style="--c:${c.deep}">
               <img src="characters/${c.id}/icon-192.png" alt="">
-              <div><b>${L({ zh: c.name.zh + '的房间', ko: c.name.ko + '의 방' })}</b><span>${L([APPS[c.id].appA.name[0] + ' · ' + APPS[c.id].appB.name[0], APPS[c.id].appA.name[1] + ' · ' + APPS[c.id].appB.name[1]])}</span></div>
+              <div><b>${L({ zh: c.name.zh + '的房间', ko: c.name.ko + '의 방' })}</b><span>${L([appList(APPS[c.id]).map(([, a]) => a.name[0]).join(' · '), appList(APPS[c.id]).map(([, a]) => a.name[1]).join(' · ')])}</span></div>
               <i>›</i></a>`).join('')}</div>
           <a class="game" href="trip/index.html"><img src="trip/icon-192.png" alt="">
             <div><b>${L(['奶油镇 · 出门去', '크림 마을 · 다녀올게'])}</b><span>${L(['小游戏 · 放置旅行', '미니게임 · 방치형 여행'])}</span></div></a>

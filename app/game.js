@@ -6,9 +6,9 @@
    ========================================================================== */
 (function () {
   const { c, cfg, L, t, esc, load, save, dayKey, face, react, say, toast, sfx, pick } = NG;
-  const G = cfg.game;
-  const mode = cfg.appB.mode;
-  const main = NG.shell({ mute: ['catch', 'whack', 'match', 'reaction', 'hop'].includes(mode), small: true });
+  const G = NG.appCfg.game || cfg.game;
+  const mode = NG.appCfg.mode;
+  const main = NG.shell({ mute: ['catch', 'whack', 'match', 'reaction', 'hop', 'ice'].includes(mode), small: true });
   const data = load();
   const T = (zh, ko) => [zh, ko];
   const style = document.createElement('style');
@@ -260,7 +260,7 @@
         <div class="hud"><span>⏱ <b id="tl">${left}</b>s</span><span>🌰 <b id="sc">${score}</b></span><span>${L(T('最佳', '최고'))} ${data.best || 0}</span></div>
         <div class="playfield" id="pf" style="aspect-ratio:1">
           <div class="holes">${holes.map((_, i) => `<button class="hole" data-h="${i}" aria-label="hole ${i + 1}"><span class="hole__who"></span><span class="hole__fx"></span></button>`).join('')}</div>
-          <div class="overlay" id="ov"><h2>${L(cfg.appB.name)}</h2><p>${L(G.ready)}</p><button class="btn btn--main btn--xl" id="go">${L(T('开始', '시작'))}</button></div>
+          <div class="overlay" id="ov"><h2>${L(NG.appCfg.name)}</h2><p>${L(G.ready)}</p><button class="btn btn--main btn--xl" id="go">${L(T('开始', '시작'))}</button></div>
         </div>`;
     }
     function spawn() {
@@ -331,7 +331,7 @@
         <div class="hud"><span class="lives" id="lv">❤️❤️❤️</span><span>⭐ <b id="sc">0</b></span><span>⏱ <b id="tl">${LIMIT}</b></span></div>
         <div class="playfield" id="pf">
           <div class="player" id="pl"><img src="${face('happy')}" alt="">${G.friends ? '<span class="cushion"></span>' : ''}</div>
-          <div class="overlay" id="ov"><h2>${L(cfg.appB.name)}</h2><p>${L(G.ready)}</p>
+          <div class="overlay" id="ov"><h2>${L(NG.appCfg.name)}</h2><p>${L(G.ready)}</p>
             <p class="muted">${L(T('← → 键或手指拖动', '← → 키 또는 손가락으로 드래그'))} · ${L(T('最佳', '최고'))} ${data.best || 0}</p>
             <button class="btn btn--main btn--xl" id="go">${L(T('开始', '시작'))}</button></div>
         </div>`;
@@ -392,7 +392,7 @@
         return;
       }
       score += d.pts; sfx('good');
-      if (score % 5 === 0) say(pick(cfg.lines.recorded), 'happy', 'bounce');
+      if (score % 5 === 0) say(pick(NG.lines.recorded), 'happy', 'bounce');
     }
     function loseLife(line) { lives--; sfx('bad'); say(line, 'sad', 'shake'); }
     function start() {
@@ -447,7 +447,7 @@
         <div class="playfield" id="pf" style="background:#E4F4FB;aspect-ratio:3/4">
           <canvas id="cv" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas>
           <div class="overlay" id="ov" style="background:rgba(255,255,255,.25);-webkit-backdrop-filter:none;backdrop-filter:none;justify-content:flex-start;padding-top:10%">
-            <h2 style="font-size:40px;letter-spacing:.06em;color:#2E3A44;font-weight:900;text-shadow:0 3px 0 #fff">${L(cfg.appB.name)}</h2>
+            <h2 style="font-size:40px;letter-spacing:.06em;color:#2E3A44;font-weight:900;text-shadow:0 3px 0 #fff">${L(NG.appCfg.name)}</h2>
             <p style="margin:0;font-weight:700;color:#4D6876">${L(G.ready)}</p>
             <button class="btn btn--main btn--xl" id="go" style="margin-top:auto;margin-bottom:10%">${L(T('开始', '시작'))}</button></div>
         </div>
@@ -620,5 +620,117 @@
     say(G.ready, 'happy', 'wave');
   }
 
-  ({ ball, fortune, quiz, match, reaction, whack, hop, catch: catchGame })[mode]();
+  /* ===================================================== ice 冰面跳一跳（陈舒新）
+     六边形冰面，点相邻的冰块跳过去；离开的冰块会融化消失。把冰块全部踩完就过关。
+     每关都先随机走出一条「能踩完」的路线再生成冰面，所以一定有解。 */
+  function ice() {
+    const S = 30, SQ3 = Math.sqrt(3);
+    const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]];
+    const key = (q, r) => q + ',' + r;
+    const px = (q, r) => [S * SQ3 * (q + r / 2), S * 1.5 * r];
+    let level = data.level || 1, tiles, path, cur, hist, busy = false, svg, pen;
+    function gen(len, R) {
+      const inR = (q, r) => Math.abs(q) <= R && Math.abs(r) <= R && Math.abs(q + r) <= R;
+      const cells = []; for (let q = -R; q <= R; q++) for (let r = -R; r <= R; r++) if (inR(q, r)) cells.push([q, r]);
+      let best = [];
+      for (let tr = 0; tr < 800; tr++) {
+        const st = cells[Math.floor(Math.random() * cells.length)], seen = new Set([key(...st)]), p = [st];
+        while (p.length < len) {
+          const [q, r] = p[p.length - 1];
+          const nb = DIRS.map(([a, b]) => [q + a, r + b]).filter(([a, b]) => inR(a, b) && !seen.has(key(a, b)));
+          if (!nb.length) break;
+          const onward = c => DIRS.filter(([a, b]) => inR(c[0] + a, c[1] + b) && !seen.has(key(c[0] + a, c[1] + b))).length;
+          nb.sort((x, y) => onward(x) - onward(y));
+          const nx = Math.random() < .65 ? nb[0] : nb[Math.floor(Math.random() * nb.length)];
+          seen.add(key(...nx)); p.push(nx);
+        }
+        if (p.length > best.length) best = p;
+        if (p.length >= len) break;
+      }
+      return best;
+    }
+    function build() {
+      const len = Math.min(7 + level * 2, 30), R = len <= 12 ? 2 : 3;
+      path = gen(len, R);
+      tiles = new Map(path.map(([q, r]) => [key(q, r), { q, r, alive: true }]));
+      cur = key(...path[0]); hist = [cur]; busy = false;
+      const pts = path.map(([q, r]) => px(q, r));
+      const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), m = S * 1.4;
+      const vb = [Math.min(...xs) - m, Math.min(...ys) - m * 1.6, Math.max(...xs) - Math.min(...xs) + m * 2, Math.max(...ys) - Math.min(...ys) + m * 2.6];
+      const hex = (x, y) => Array.from({ length: 6 }, (_, i) => { const a = Math.PI / 180 * (60 * i - 30); return `${(x + (S - 2) * Math.cos(a)).toFixed(1)},${(y + (S - 2) * Math.sin(a)).toFixed(1)}`; }).join(' ');
+      main.innerHTML = `
+        <div class="hud"><span>${L(T(`第 ${level} 关`, `${level}단계`))}</span><span>${L(T('剩', '남은 얼음'))} <b id="left"></b></span><span>${L(T('最佳', '최고'))} ${data.best ? L(T(`第 ${data.best} 关`, `${data.best}단계`)) : '—'}</span></div>
+        <div class="playfield" style="aspect-ratio:1;background:linear-gradient(180deg,#2F6EA8,#1F4F86)">
+          <svg id="ice" viewBox="${vb.map(v => v.toFixed(1)).join(' ')}" style="position:absolute;inset:4%;width:92%;height:92%;overflow:visible">
+            <defs><linearGradient id="ig" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#CFE9F7"/></linearGradient></defs>
+            ${path.map(([q, r]) => { const [x, y] = px(q, r); return `<g class="tile" data-k="${key(q, r)}"><polygon points="${hex(x, y + 5)}" fill="#7FB6D9"/><polygon class="top" points="${hex(x, y)}" fill="url(#ig)" stroke="#fff" stroke-width="2"/></g>`; }).join('')}
+            <image id="pen" href="${face('happy')}" width="${S * 1.9}" height="${S * 1.9}"/>
+          </svg>
+          <div class="overlay" id="ov" hidden></div>
+        </div>
+        <div class="row"><button class="btn grow" id="hint">💡 ${L(T('提示', '힌트'))}</button><button class="btn grow" id="retry">↺ ${L(T('重来本关', '다시 하기'))}</button></div>`;
+      svg = main.querySelector('#ice'); pen = main.querySelector('#pen');
+      place(cur); paint();
+    }
+    function place(k, lift = 0) { const t = tiles.get(k), [x, y] = px(t.q, t.r); pen.setAttribute('x', (x - S * .95).toFixed(1)); pen.setAttribute('y', (y - S * 1.75 - lift).toFixed(1)); }
+    const nbrs = k => { const t = tiles.get(k); return DIRS.map(([a, b]) => key(t.q + a, t.r + b)).filter(n => tiles.has(n) && tiles.get(n).alive); };
+    function paint(hintK) {
+      const nb = new Set(nbrs(cur));
+      svg.querySelectorAll('.tile').forEach(g => {
+        const k = g.dataset.k, t = tiles.get(k);
+        g.classList.toggle('next', t.alive && nb.has(k)); g.classList.toggle('hint', k === hintK);
+        g.classList.toggle('gone', !t.alive);
+      });
+      main.querySelector('#left').textContent = [...tiles.values()].filter(t => t.alive).length - 1;
+    }
+    function hop(to) {
+      if (busy) return; busy = true; sfx('tap');
+      const from = cur, a = tiles.get(from), b = tiles.get(to), [x0, y0] = px(a.q, a.r), [x1, y1] = px(b.q, b.r);
+      pen.setAttribute('href', face('love'));
+      const t0 = performance.now(), T = 280;
+      (function step(now) {
+        const k = Math.min(1, (now - t0) / T), lift = Math.sin(k * Math.PI) * S * 1.1;
+        pen.setAttribute('x', (x0 + (x1 - x0) * k - S * .95).toFixed(1)); pen.setAttribute('y', (y0 + (y1 - y0) * k - S * 1.75 - lift).toFixed(1));
+        if (k < 1) return requestAnimationFrame(step);
+        a.alive = false; cur = to; hist.push(to); busy = false; pen.setAttribute('href', face('happy')); paint(); after();
+      })(t0);
+    }
+    function after() {
+      const left = [...tiles.values()].filter(t => t.alive).length - 1;
+      if (left === 0) {
+        data.best = Math.max(data.best || 0, level); data.level = level + 1; save(data);
+        react('done', { line: pick(G.win) }); NG.celebrate(); sfx('end');
+        overlay(`<h2>${L(T(`第 ${level} 关完成！`, `${level}단계 완료!`))}</h2><p>${L(pick(G.win))}</p><button class="btn btn--main btn--xl" id="next">${L(T('下一关', '다음 단계'))} ›</button>`);
+      } else if (!nbrs(cur).length) {
+        say(pick(G.stuck), 'sad', 'shake'); sfx('bad');
+        overlay(`<h2>${L(T(`还剩 ${left} 块`, `${left}개 남았어`))}</h2><p>${L(pick(G.stuck))}</p><button class="btn btn--main btn--xl" id="retry2">↺ ${L(T('重来本关', '다시 하기'))}</button>`);
+      } else if (Math.random() < .35) say(pick(G.step), 'happy', 'bounce');
+    }
+    function overlay(html) { const ov = main.querySelector('#ov'); ov.innerHTML = html; ov.hidden = false; }
+    main.addEventListener('click', e => {
+      if (e.target.closest('#next')) { level++; build(); say(T(`第 ${level} 关，冰面更大了 ⏰`, `${level}단계, 빙판이 더 넓어졌어 ⏰`), 'happy', 'wave'); return; }
+      if (e.target.closest('#retry') || e.target.closest('#retry2')) {     // 重来：同一张冰面，回到起点
+        tiles.forEach(t => { t.alive = true; }); cur = key(...path[0]); hist = [cur]; main.querySelector('#ov').hidden = true; place(cur); paint();
+        say(T('重新规划一次。', '다시 계획하자.'), 'happy'); return;
+      }
+      if (e.target.closest('#hint')) {
+        const ok = hist.every((k, i) => k === key(...path[i]));
+        if (ok && hist.length < path.length) { const nk = key(...path[hist.length]); paint(nk); say(pick(G.hint), 'proud'); }
+        else say(pick(G.nohint), 'surprised');
+        return;
+      }
+      const g = e.target.closest('.tile'); if (!g || busy) return;
+      const k = g.dataset.k;
+      if (nbrs(cur).includes(k)) hop(k); else if (k !== cur && tiles.get(k).alive) say(T('只能跳到旁边亮着的冰块哦', '옆에 빛나는 얼음으로만 뛸 수 있어'), 'surprised');
+    });
+    const st = document.createElement('style');
+    st.textContent = `#ice .tile{cursor:pointer;transition:opacity .45s,transform .45s;transform-box:fill-box;transform-origin:center}
+      #ice .tile.next .top{stroke:#FFD86B;stroke-width:4}
+      #ice .tile.hint .top{fill:#FFF3C4;stroke:#F5A623;stroke-width:5}
+      #ice .tile.gone{opacity:0;transform:scale(.6);pointer-events:none}`;
+    document.head.appendChild(st);
+    build(); say(G.ready, 'happy', 'wave');
+  }
+
+  ({ ball, fortune, quiz, match, reaction, whack, hop, ice, catch: catchGame })[mode]();
 })();

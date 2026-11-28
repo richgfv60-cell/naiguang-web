@@ -5,7 +5,7 @@
    ========================================================================== */
 (function () {
   const { c, cfg, L, t, esc, load, save, dayKey, daysBetween, face, react, greet, say, toast } = NG;
-  const mode = cfg.appA.mode;
+  const mode = NG.appCfg.mode;
   const main = NG.shell({ small: false });
   const data = load();
   const T = (zh, ko) => [zh, ko];
@@ -255,7 +255,7 @@
         data.no += 1;
         data.items.unshift({ id: uid(), no: data.no, what: v.slice(0, 30), who: w, at: dayKey(), back: false });
         what = ''; who = null; otherName = ''; touch(); draw();
-        react('recorded', { line: NG.fill(NG.pick(cfg.lines.recorded), { n: data.no }) });
+        react('recorded', { line: NG.fill(NG.pick(NG.lines.recorded), { n: data.no }) });
         return;
       }
       const li = e.target.closest('[data-id]');
@@ -305,8 +305,8 @@
     }
     document.addEventListener('visibilitychange', () => {
       if (!running) return;
-      if (document.hidden) { clearInterval(timer); timer = null; frozen = true; NG.charEl.classList.add('freeze'); say(cfg.lines.frozen[0], 'surprised'); }
-      else if (frozen) { frozen = false; NG.charEl.classList.remove('freeze'); lastTick = performance.now(); timer = setInterval(tick, 250); draw(); say(cfg.lines.frozen[1], 'happy', 'bounce'); }
+      if (document.hidden) { clearInterval(timer); timer = null; frozen = true; NG.charEl.classList.add('freeze'); say(NG.lines.frozen[0], 'surprised'); }
+      else if (frozen) { frozen = false; NG.charEl.classList.remove('freeze'); lastTick = performance.now(); timer = setInterval(tick, 250); draw(); say(NG.lines.frozen[1], 'happy', 'bounce'); }
     });
     main.addEventListener('click', e => {
       const m = e.target.closest('[data-min]');
@@ -371,8 +371,149 @@
     return Object.keys(data.entries).length > 0;
   }
 
+  /* ===================================================== feed 小石屋日记（董昊鑫）
+     记录角色的日常 · 故事 · 心情；置顶显示角色已经发布的漫画和短视频；
+     每条日记都能生成 1:1 卡片分享到小镇 Instagram（社交账号联动） */
+  function feed() {
+    const A = NG.appCfg, IG = A.social;
+    const TYPES = [['daily', ['日常', '일상'], '☀️'], ['story', ['故事', '이야기'], '📖'], ['mood', ['心情', '기분'], '💭']];
+    const FACES = ['happy', 'love', 'proud', 'surprised', 'sad', 'sleep'];
+    data.posts = data.posts || [];
+    let type = 'daily', stamp = 'happy', draft = '', photo = null, filter = 'all';
+    const official = [
+      ...(c.comics || []).map(m => ({ img: `assets/${c.id}/${m.file || `comic-${m.no}-zh.png`}`, type: m.type, title: m.title, desc: m.desc })),
+      ...(c.shorts || []).map(v => ({ img: `assets/${c.id}/${v.poster || `short-${v.no}-poster.jpg`}`, type: v.type, title: v.title, desc: v.desc, video: true }))
+    ];
+    const st = document.createElement('style');
+    st.textContent = `
+      .social{display:flex;align-items:center;gap:12px}
+      .social img{width:52px;height:52px;border-radius:50%;background:var(--tint);object-fit:contain;padding:3px}
+      .social b{display:block}
+      .ig{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 14px;border-radius:20px;color:#fff;font-weight:700;font-size:14px;text-decoration:none;background:linear-gradient(90deg,#F58529,#DD2A7B 60%,#8134AF);white-space:nowrap}
+      .pins{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x mandatory}
+      .pin{flex:none;width:132px;scroll-snap-align:start;text-decoration:none;color:inherit}
+      .pin img{width:132px;height:132px;object-fit:cover;border-radius:14px;background:var(--bg)}
+      .pin span{display:block;font-size:12px;color:var(--ink-2);margin-top:4px}
+      .pin b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .ph{display:flex;gap:8px;align-items:center;margin-top:10px}
+      .ph img{width:56px;height:56px;object-fit:cover;border-radius:10px}
+      .post{background:#fff;border-radius:20px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+      .post__h{display:flex;align-items:center;gap:10px}
+      .post__h img{width:40px;height:40px;border-radius:50%;background:var(--tint);object-fit:contain;padding:2px}
+      .post__h div{flex:1;min-width:0}
+      .post__h small{display:block;color:var(--ink-2);font-size:12px}
+      .post__face{width:44px;height:44px;object-fit:contain}
+      .post__text{margin:10px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+      .post__img{width:100%;border-radius:14px;margin-top:10px;aspect-ratio:1;object-fit:cover}
+      .post__act{display:flex;gap:4px;margin-top:8px}
+      .post__act button{min-height:44px;padding:0 12px;border-radius:22px;color:var(--ink-2);font-weight:700}
+      .post__act button.on{color:#E8505B}
+      .tag2{font-size:12px;padding:2px 8px;border-radius:10px;background:color-mix(in srgb,var(--tint) 70%,#fff);color:var(--deep);font-weight:700}`;
+    document.head.appendChild(st);
+    function draw() {
+      const list = data.posts.filter(p => filter === 'all' || p.type === filter);
+      const tName = k => TYPES.find(x => x[0] === k);
+      main.innerHTML = `
+        <div class="card social"><img src="${NG.ROOT}app/icons/town-192.png" alt="">
+          <div class="grow"><b>@${IG}</b><span class="muted">${L(['奶油动物镇的官方 Instagram', '크림 동물 마을 공식 인스타그램'])}</span></div>
+          <a class="ig" href="https://www.instagram.com/${IG}/" target="_blank" rel="noopener">${L(['关注', '팔로우'])}</a></div>
+        ${official.length ? `<div class="card"><h3>📌 ${L([`${c.name.zh}已经发布的故事`, `${c.name.ko}가 올린 이야기`])}</h3>
+          <div class="pins">${official.map(o => `<a class="pin" href="${NG.ROOT}character.html?id=${c.id}#${o.video ? 'shorts' : 'comics'}"><img src="${NG.ROOT}${o.img}" alt="" loading="lazy"><span>${o.video ? '▶ ' : ''}${L(o.type)}</span><b>${L(o.title)}</b></a>`).join('')}</div></div>` : ''}
+        <div class="card">
+          <h3>${L(['写今天的日记', '오늘의 일기 쓰기'])}</h3>
+          <div class="chips">${TYPES.map(([k, n, i]) => `<button class="chip ${type === k ? 'is-on' : ''}" data-type="${k}">${i} ${L(n)}</button>`).join('')}</div>
+          <div class="chips" style="margin-top:8px">${FACES.map(f => `<button class="chip ${stamp === f ? 'is-on' : ''}" data-face="${f}" aria-label="${f}"><img src="${face(f)}" alt=""></button>`).join('')}</div>
+          <textarea class="input" id="txt" maxlength="140" style="margin-top:10px" placeholder="${esc(t(['奶熊今天……', '우유 곰은 오늘……']))}" data-ph-zh="奶熊今天……" data-ph-ko="우유 곰은 오늘……"></textarea>
+          <div class="ph"><label class="btn btn--ghost" style="min-height:44px">📷 ${L(['加照片', '사진 추가'])}<input type="file" accept="image/*" id="file" hidden></label>
+            ${photo ? `<img src="${photo}" alt=""><button class="icon-btn" id="rmph" aria-label="删除照片 / 사진 삭제">×</button>` : ''}</div>
+          <button class="btn btn--main btn--wide btn--xl" id="go" style="margin-top:12px">${L(['记下来', '기록하기'])}</button>
+        </div>
+        <div class="chips">${[['all', ['全部', '전체'], '']].concat(TYPES).map(([k, n, i]) => `<button class="chip ${filter === k ? 'is-on' : ''}" data-filter="${k}">${i} ${L(n)} ${k === 'all' ? data.posts.length : data.posts.filter(p => p.type === k).length}</button>`).join('')}</div>
+        ${list.length ? list.map(p => `<article class="post" data-id="${p.id}">
+            <div class="post__h"><img src="${face('happy')}" alt=""><div><b>${L(c.name)}</b><small>${p.d} · <span class="tag2">${tName(p.type)[2]} ${L(tName(p.type)[1])}</span></small></div><img class="post__face" src="${face(p.face)}" alt=""></div>
+            ${p.text ? `<p class="post__text">${esc(p.text)}</p>` : ''}
+            ${p.photo ? `<img class="post__img" src="${p.photo}" alt="">` : ''}
+            <div class="post__act"><button data-like class="${p.liked ? 'on' : ''}">♥ ${p.liked ? 1 : 0}</button><button data-share>↗ ${L(['分享到 Instagram', '인스타에 공유'])}</button><span class="grow"></span><button data-del aria-label="删除 / 삭제">🗑</button></div>
+          </article>`).join('') : `<p class="muted center">${L(['还没有这一类的日记。', '이 종류의 일기는 아직 없어요.'])}</p>`}`;
+      const tx = main.querySelector('#txt'); tx.value = draft; tx.addEventListener('input', () => { draft = tx.value; });
+      main.querySelector('#file').addEventListener('change', e => { const f = e.target.files[0]; if (f) shrink(f).then(u => { photo = u; draw(); }); });
+    }
+    /* 照片缩到 640px 以内再存，避免把手机存储占满 */
+    function shrink(file) {
+      return new Promise(res => {
+        const im = new Image(); im.onload = () => {
+          const k = Math.min(1, 640 / Math.max(im.width, im.height)), cv = document.createElement('canvas');
+          cv.width = Math.round(im.width * k); cv.height = Math.round(im.height * k); cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
+          URL.revokeObjectURL(im.src); res(cv.toDataURL('image/jpeg', .72));
+        }; im.onerror = () => res(null); im.src = URL.createObjectURL(file);
+      });
+    }
+    const loadImg = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
+    /* 1:1 分享卡（1080×1080，和小镇 Instagram 的正方形规格一致） */
+    async function card(p) {
+      const W = 1080, cv = document.createElement('canvas'); cv.width = cv.height = W; const x = cv.getContext('2d');
+      const fam = getComputedStyle(document.body).fontFamily;
+      x.fillStyle = c.tint; x.fillRect(0, 0, W, W);
+      x.fillStyle = '#fff'; x.beginPath(); x.roundRect ? x.roundRect(60, 60, W - 120, W - 120, 48) : x.rect(60, 60, W - 120, W - 120); x.fill();
+      const [fi, pi] = await Promise.all([loadImg(face(p.face)), p.photo ? loadImg(p.photo) : null]);
+      const tp = TYPES.find(tt => tt[0] === p.type);
+      x.fillStyle = c.deep; x.font = `800 44px ${fam}`; x.fillText(`${tp[2]} ${t(c.name)} · ${t(tp[1])}`, 120, 170);
+      x.fillStyle = '#9A8F90'; x.font = `500 32px ${fam}`; x.fillText(p.d, 120, 220);
+      if (fi) x.drawImage(fi, W - 300, 100, 180, 180 * fi.height / fi.width);
+      let y = 300;
+      if (pi) { const h = 420, w = Math.min(W - 240, h * pi.width / pi.height); x.save(); x.beginPath(); x.rect((W - w) / 2, y, w, h); x.clip(); x.drawImage(pi, (W - w) / 2, y, w, h); x.restore(); y += h + 40; }
+      x.fillStyle = '#2A2426'; x.font = `600 ${pi ? 38 : 52}px ${fam}`;
+      const lh = pi ? 54 : 74, maxW = W - 240; let line = '';
+      for (const ch of (p.text || '')) {
+        if (ch === '\n' || x.measureText(line + ch).width > maxW) { x.fillText(line, 120, y + lh); y += lh; line = ch === '\n' ? '' : ch; if (y > W - 220) break; } else line += ch;
+      }
+      if (line && y <= W - 220) x.fillText(line, 120, y + lh);
+      x.fillStyle = c.deep; x.font = `700 32px ${fam}`; x.fillText(`@${IG} · ${t(['奶油动物镇', '크림 동물 마을'])}`, 120, W - 110);
+      return cv;
+    }
+    async function share(p) {
+      const cv = await card(p), caption = `${p.text || ''}\n\n#奶油动物镇 #${t(c.name)} @${IG}`;
+      const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+      const file = new File([blob], `${c.id}-${p.id}.png`, { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {          // 手机：系统分享面板里选 Instagram
+        try { await navigator.share({ files: [file], text: caption }); react('recorded', { line: NG.pick(NG.lines.shared) }); } catch (e) {}
+        return;
+      }
+      if (window.AndroidBridge && AndroidBridge.saveImage) AndroidBridge.saveImage(cv.toDataURL('image/png'));
+      else { const a = document.createElement('a'); a.href = cv.toDataURL('image/png'); a.download = file.name; a.click(); }
+      try { await navigator.clipboard.writeText(caption); } catch (e) {}
+      toast(['卡片已保存、文字已复制，正在打开 Instagram', '카드 저장 · 문구 복사 완료, 인스타그램을 열어요']);
+      setTimeout(() => window.open(`https://www.instagram.com/${IG}/`, '_blank'), 900);
+      react('recorded', { line: NG.pick(NG.lines.shared) });
+    }
+    function streak() { const s = new Set(data.posts.map(p => p.d)); let n = 0; const d = new Date(); while (s.has(dayKey(d))) { n++; d.setDate(d.getDate() - 1); } return n; }
+    main.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.type) { type = b.dataset.type; draw(); return; }
+      if (b.dataset.face) { stamp = b.dataset.face; NG.setFace(stamp); draw(); return; }
+      if (b.dataset.filter) { filter = b.dataset.filter; draw(); return; }
+      if (b.id === 'rmph') { photo = null; draw(); return; }
+      if (b.id === 'go') {
+        const v = draft.trim(); if (!v && !photo) { toast(['写一句话或加一张照片吧', '한 줄 쓰거나 사진을 붙여 줘']); return; }
+        const first = !data.posts.some(p => p.d === dayKey());
+        data.posts.unshift({ id: Date.now().toString(36), d: dayKey(), type, face: stamp, text: v.slice(0, 140), photo, liked: false });
+        if (!save(data)) { data.posts.shift(); return; }
+        draft = ''; photo = null; data.last = dayKey(); save(data); filter = 'all'; draw();
+        if (first && [3, 7, 14, 30].includes(streak())) react('done'); else react('recorded', { face: stamp });
+        return;
+      }
+      const art = b.closest('[data-id]'); if (!art) return;
+      const p = data.posts.find(x => x.id === art.dataset.id);
+      if (b.hasAttribute('data-like')) { p.liked = !p.liked; save(data); draw(); if (p.liked) say(['嗯。（脸红）', '응. (얼굴 빨개짐)'], 'love', 'bounce'); }
+      else if (b.hasAttribute('data-share')) share(p);
+      else if (b.hasAttribute('data-del') && confirm(t(['删除这篇日记？', '이 일기를 지울까요?']))) { data.posts = data.posts.filter(x => x !== p); save(data); draw(); }
+    });
+    draw();
+    return data.posts.length > 0;
+  }
+
   /* —— 启动 —— */
-  const run = { mood, todo: () => list('todo'), idea: () => list('idea'), habit, water, lend, focus, diary }[mode];
+  const run = { mood, todo: () => list('todo'), idea: () => list('idea'), habit, water, lend, focus, diary, feed }[mode];
   const res = run();
   const has = typeof res === 'object' ? res.has : res;
   NG.introCards(data, () => {

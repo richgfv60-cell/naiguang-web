@@ -560,7 +560,7 @@ function renderHome() {
             <img class="app-room__icon" src="characters/${c.id}/icon-192.png" alt="" loading="lazy">
             <div class="app-room__text">
               <b>${L(c.name)}${L({ zh: '的房间', ko: '의 방' })}</b>
-              <span>${L(arr2(APPS[c.id].appA.name))} · ${L(arr2(APPS[c.id].appB.name))}</span>
+              <span>${L({ zh: appList(APPS[c.id]).map(([, a]) => a.name[0]).join(' · '), ko: appList(APPS[c.id]).map(([, a]) => a.name[1]).join(' · ') })}</span>
             </div>
             <span class="app-room__go">›</span>
           </a>` : '').join('')}
@@ -1153,10 +1153,10 @@ function renderCharacter() {
         <h2 class="headline" data-reveal>${L({ zh: '走进我的一天。', ko: '나의 하루 속으로.' })}</h2>
         <p class="lead" data-reveal>「${L(arr2(APPS[c.id].sentence))}」</p>
         <div class="apps-grid apps-grid--2 block-gap">
-          ${[['a', APPS[c.id].appA, 'happy', { zh: '实操 1 · 记录型', ko: '실습 1 · 기록형' }], ['b', APPS[c.id].appB, 'proud', { zh: '实操 2 · 游戏型', ko: '실습 2 · 놀이형' }]].map(([k, a, f, tag], i) => `
+          ${appList(APPS[c.id]).map(([k, a], i) => `
             <a class="app-room" href="characters/${c.id}/app-${k}/" data-reveal style="--d:${i * 0.08}s">
-              <img class="app-room__icon app-room__icon--face" src="assets/${c.id}/face/${f}.png" alt="" loading="lazy">
-              <div class="app-room__text"><small>${L(tag)}</small><b>${L({ zh: a.name[0], ko: a.name[1] })}</b><span>${L({ zh: a.sub[0], ko: a.sub[1] })}</span></div>
+              <img class="app-room__icon app-room__icon--face" src="assets/${c.id}/face/${k === 'a' ? 'happy' : k === 'b' ? 'proud' : 'love'}.png" alt="" loading="lazy">
+              <div class="app-room__text"><small>${L(appTag(k, a))}</small><b>${L(arr2(a.name))}</b><span>${L(arr2(a.sub))}</span><em class="app-room__by">${L(appCredit(a))}</em></div>
               <span class="app-room__go">›</span>
             </a>`).join('')}
         </div>

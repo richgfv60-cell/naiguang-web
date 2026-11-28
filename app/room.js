@@ -8,8 +8,8 @@
   const T = (zh, ko) => [zh, ko];
   document.documentElement.style.setProperty('--tint', c.tint);
   document.documentElement.style.setProperty('--deep', c.deep);
-  const kindA = { mood: 'A', diary: 'A', lend: 'A', water: 'B', habit: 'B', todo: 'C', idea: 'C', focus: 'C' };
-  const kindB = { hop: 'E', catch: 'E', match: 'E', whack: 'E', reaction: 'E', ball: 'F', fortune: 'F', quiz: 'F' };
+  const kindA = { feed: 'A', mood: 'A', diary: 'A', lend: 'A', water: 'B', habit: 'B', todo: 'C', idea: 'C', focus: 'C' };
+  const kindB = { ice: 'E', hop: 'E', catch: 'E', match: 'E', whack: 'E', reaction: 'E', ball: 'F', fortune: 'F', quiz: 'F' };
   const KN = { A: T('记录', '기록'), B: T('习惯·健康', '습관·건강'), C: T('待办·专注', '할 일·집중'), E: T('游戏', '게임'), F: T('运势·测试', '운세·테스트') };
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
@@ -34,6 +34,7 @@
     .tile__icon{width:64px;height:64px;border-radius:18px;background:var(--tint);display:flex;align-items:center;justify-content:center}
     .tile__icon img{width:52px;height:52px;object-fit:contain}
     .tile b{font-size:17px}
+    .tile__by{margin-top:auto;font-size:11px;font-weight:700;color:var(--deep);opacity:.75}
     .tile .tag{align-self:flex-start;font-size:11px;padding:2px 8px;border-radius:10px;background:var(--bg);color:var(--deep);font-weight:700}
     .faces{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
     .faces img{width:100%;aspect-ratio:1;object-fit:contain;background:var(--bg);border-radius:12px;padding:3px}
@@ -42,11 +43,13 @@
   `;
   document.head.appendChild(st);
 
-  const tile = (k, a, kind) => `
+  const KIND = { ...kindA, ...kindB };
+  const tile = (k, a) => `
     <a class="tile" href="app-${k}/index.html">
-      <span class="tile__icon"><img src="${face(k === 'a' ? 'happy' : 'proud')}" alt=""></span>
-      <span class="tag">${k === 'a' ? L(T('实操 1 · 记录型', '실습 1 · 기록형')) : L(T('实操 2 · 游戏型', '실습 2 · 놀이형'))} · ${kind} ${L(KN[kind])}</span>
+      <span class="tile__icon"><img src="${face(k === 'a' ? 'happy' : k === 'b' ? 'proud' : 'love')}" alt=""></span>
+      <span class="tag">${L(appTag(k, a))} · ${KIND[a.mode]} ${L(KN[KIND[a.mode]])}</span>
       <b>${L(a.name)}</b><span class="muted">${L(a.sub)}</span>
+      <span class="tile__by">${L(appCredit(a))}</span>
     </a>`;
 
   document.body.innerHTML = `
@@ -65,7 +68,7 @@
       <main class="main">
         <p class="center" style="margin:4px 8px 0;color:var(--ink-2)">「${L(cfg.sentence)}」</p>
         <div><h3 style="margin:6px 4px 10px">${L(T('应用标签', '앱 탭'))}</h3>
-          <div class="tabs">${tile('a', cfg.appA, kindA[cfg.appA.mode])}${tile('b', cfg.appB, kindB[cfg.appB.mode])}</div></div>
+          <div class="tabs">${appList(cfg).map(([k, a]) => tile(k, a)).join('')}</div></div>
         <div class="card" id="install">
           <h3>📲 ${L(T('放到手机主屏幕', '홈 화면에 추가'))}</h3>
           ${standalone ? `<p>${L(T('已经在主屏幕上啦！', '이미 홈 화면에 있어요!'))}</p>` : `

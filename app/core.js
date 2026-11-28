@@ -15,6 +15,8 @@
   const c = CHARACTERS.find(x => x.id === ID) || CHARACTERS[0];
   const cfg = APPS[c.id];
   const KEY = `ngw:${c.id}:${APP}`;
+  const appCfg = cfg['app' + APP.toUpperCase()] || cfg.appA;
+  const lines = appCfg.lines || cfg.lines, intro = appCfg.intro || cfg.intro;
 
   /* —— 语言 —— */
   function lang() { return document.documentElement.dataset.lang === 'ko' ? 'ko' : 'zh'; }
@@ -23,7 +25,7 @@
     document.documentElement.lang = l === 'ko' ? 'ko' : 'zh-CN';
     try { localStorage.setItem('lang', l); } catch (e) {}
     document.querySelectorAll('[data-ph-zh]').forEach(el => { el.placeholder = el.dataset['ph' + (l === 'ko' ? 'Ko' : 'Zh')]; });
-    document.title = t(cfg[APP === 'a' ? 'appA' : 'appB'].name) + ' · ' + t(c.name);
+    document.title = t(appCfg.name) + ' · ' + t(c.name);
     NG.onLang && NG.onLang(l);
   }
   /* 文字可以是 {zh,ko}、[zh,ko] 或纯字符串 */
@@ -107,7 +109,7 @@
   /* 唯一的反应入口 */
   function react(situation, extra) {
     const rule = RULES[situation] || RULES.idle;
-    const pool = (cfg.lines && cfg.lines[situation]) || cfg.lines.idle;
+    const pool = lines[situation] || lines.idle;
     const line = extra && extra.line ? extra.line : pick(pool);
     say(line, (extra && extra.face) || rule.face, rule.anim);
     if (rule.stars) celebrate();
@@ -116,7 +118,7 @@
   /* 打开时：第一次 / 好久不见 / 漏了一天 / 平时 */
   function greet(lastDay, hasData) {
     const today = dayKey();
-    if (!hasData) return react('first', { line: cfg.intro.empty });
+    if (!hasData) return react('first', { line: intro.empty });
     const gap = lastDay ? daysBetween(lastDay, today) : 0;
     if (gap >= 3) return react('longtime');
     if (gap === 2) return react('missed');
@@ -126,7 +128,7 @@
   /* —— 第一次打开：3 张自我介绍卡（以后不再出现） —— */
   function introCards(data, done) {
     if (data.introSeen) return done && done();
-    const cards = cfg.intro.cards;
+    const cards = intro.cards;
     let i = 0;
     const box = document.createElement('div'); box.className = 'intro'; box.setAttribute('role', 'dialog');
     const faces = ['love', 'happy', 'proud'];
@@ -164,7 +166,6 @@
 
   /* —— 页面骨架：顶栏 + 舞台 + 内容 —— */
   function shell(opts = {}) {
-    const appCfg = cfg[APP === 'a' ? 'appA' : 'appB'];
     document.documentElement.style.setProperty('--tint', c.tint);
     document.documentElement.style.setProperty('--deep', c.deep);
     document.body.innerHTML = `
@@ -177,7 +178,7 @@
         </header>
         <section class="stage" id="stage"></section>
         <main class="main" id="main"></main>
-        <p class="privacy">${L(['记录只保存在这台手机里，不会上传。', '기록은 이 폰에만 저장되고 업로드되지 않아요.'])}</p>
+        <p class="privacy">${L(['记录只保存在这台手机里，不会上传。', '기록은 이 폰에만 저장되고 업로드되지 않아요.'])}<br><span class="credit">${L(appCredit(appCfg))}</span></p>
       </div>`;
     document.querySelector('button[data-lang]').addEventListener('click', () => setLang(lang() === 'zh' ? 'ko' : 'zh'));
     const mb = document.querySelector('[data-mute]');
@@ -194,7 +195,7 @@
   }
 
   window.NG = {
-    c, cfg, APP, ROOT, lang, setLang, t, L, esc, fill, load, save, dayKey, daysBetween, face, pick, toast,
+    c, cfg, appCfg, lines, APP, ROOT, lang, setLang, t, L, esc, fill, load, save, dayKey, daysBetween, face, pick, toast,
     react, greet, say, setFace, celebrate, introCards, sfx, shell, mountStage,
     get charEl() { return charEl; }, get muted() { return muted; }, onLang: null
   };

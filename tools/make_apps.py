@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-V = '20261128'
+V = '20261129'
 
 data_js = (ROOT / 'data.js').read_text(encoding='utf-8')
 chars_js = (ROOT / 'app/chars.js').read_text(encoding='utf-8')
@@ -24,10 +24,17 @@ assert len(CHARS) == 8, CHARS
 
 
 def app_names(cid):
-    block = chars_js[chars_js.index(f'  {cid}: {{'):]
-    a = re.search(r"appA: \{ mode: '(\w+)', name: \['([^']+)', '([^']+)'\]", block)
-    b = re.search(r"appB: \{ mode: '(\w+)', name: \['([^']+)', '([^']+)'\]", block)
-    return (a[1], a[2], a[3]), (b[1], b[2], b[3])
+    """这个角色的所有应用：[(键, 模式, 中文名, 韩文名, 脚本)]；appC 等组员新增应用按 kind 选脚本"""
+    start = chars_js.index(f'  {cid}: {{')
+    nxt = re.search(r"\n  \w+: \{\n", chars_js[start + 5:])
+    block = chars_js[start: start + 5 + (nxt.start() if nxt else len(chars_js))]
+    out = []
+    for k in 'ABCD':
+        m = re.search(r"app" + k + r": \{ mode: '(\w+)',(?: kind: '(\w+)',)?(?: by: '\w+',)? name: \['([^']+)', '([^']+)'\]", block)
+        if not m: continue
+        kind = m[2] or ('record' if k == 'A' else 'game')
+        out.append((k.lower(), m[1], m[3], m[4], 'app/record.js' if kind == 'record' else 'app/game.js'))
+    return out
 
 
 def page(title, tint, root, cid, app, scripts, manifest=True, icon='../icon-192.png'):
@@ -89,14 +96,15 @@ for ch in CHARS:
     (base / 'app-a').mkdir(parents=True, exist_ok=True)
     (base / 'app-b').mkdir(parents=True, exist_ok=True)
     icons(cid, ch['tint'], base)
-    (a_mode, a_zh, a_ko), (b_mode, b_zh, b_ko) = app_names(cid)
+    apps = app_names(cid)
     common = ['data.js', 'app/chars.js', 'app/core.js']
     # 我的房间
     (base / 'index.html').write_text(page(f"{ch['zh']}的房间 · 奶油动物镇", ch['tint'], '../../', cid, 'room', common + ['app/room.js'], icon='icon-192.png'), encoding='utf-8')
     (base / 'manifest.webmanifest').write_text(manifest(f"{ch['zh']}的房间 · {ch['ko']}의 방", f"{ch['zh']}的房间", ch['tint'], ''), encoding='utf-8')
     # 实操 1 / 实操 2
-    for k, mode, zh, ko, js in [('a', a_mode, a_zh, a_ko, 'app/record.js'), ('b', b_mode, b_zh, b_ko, 'app/game.js')]:
+    for k, mode, zh, ko, js in apps:
         d = base / f'app-{k}'
+        d.mkdir(parents=True, exist_ok=True)
         (d / 'index.html').write_text(page(f"{zh} · {ch['zh']}", ch['tint'], '../../../', cid, k, common + [js]), encoding='utf-8')
         (d / 'manifest.webmanifest').write_text(manifest(f"{zh} · {ch['zh']} · {ko}", zh, ch['tint'], '../'), encoding='utf-8')
-    print(cid, a_mode, b_mode)
+    print(cid, ' '.join(f'{k}:{m}' for k, m, *_ in apps))
