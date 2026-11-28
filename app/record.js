@@ -375,7 +375,7 @@
      记录角色的日常 · 故事 · 心情；置顶显示角色已经发布的漫画和短视频；
      每条日记都能生成 1:1 卡片分享到小镇 Instagram（社交账号联动） */
   function feed() {
-    const A = NG.appCfg, IG = A.social;
+    const A = NG.appCfg, IG = c.ig || '';
     const TYPES = [['daily', ['日常', '일상'], '☀️'], ['story', ['故事', '이야기'], '📖'], ['mood', ['心情', '기분'], '💭']];
     const FACES = ['happy', 'love', 'proud', 'surprised', 'sad', 'sleep'];
     data.posts = data.posts || [];
@@ -418,9 +418,7 @@
           ${c.ig ? `<div class="social"><img src="${face('happy')}" alt="">
             <div class="grow"><b>@${c.ig}</b><span class="muted">${L([`${c.name.zh}的 Instagram`, `${c.name.ko}의 인스타그램`])}</span></div>
             <a class="ig" href="https://www.instagram.com/${c.ig}/" target="_blank" rel="noopener">${L(['关注', '팔로우'])}</a></div>` : ''}
-          <div class="social"><img src="${NG.ROOT}app/icons/town-192.png" alt="">
-            <div class="grow"><b>@${IG}</b><span class="muted">${L(['奶油动物镇的官方 Instagram', '크림 동물 마을 공식 인스타그램'])}</span></div>
-            <a class="ig" href="https://www.instagram.com/${IG}/" target="_blank" rel="noopener">${L(['关注', '팔로우'])}</a></div></div>
+</div>
         ${official.length ? `<div class="card"><h3>📌 ${L([`${c.name.zh}已经发布的故事`, `${c.name.ko}가 올린 이야기`])}</h3>
           <div class="pins">${official.map(o => `<a class="pin" href="${NG.ROOT}character.html?id=${c.id}#${o.video ? 'shorts' : 'comics'}"><img src="${NG.ROOT}${o.img}" alt="" loading="lazy"><span>${o.video ? '▶ ' : ''}${L(o.type)}</span><b>${L(o.title)}</b></a>`).join('')}</div></div>` : ''}
         <div class="card">
@@ -472,7 +470,7 @@
         if (ch === '\n' || x.measureText(line + ch).width > maxW) { x.fillText(line, 120, y + lh); y += lh; line = ch === '\n' ? '' : ch; if (y > W - 220) break; } else line += ch;
       }
       if (line && y <= W - 220) x.fillText(line, 120, y + lh);
-      x.fillStyle = c.deep; x.font = `700 32px ${fam}`; x.fillText(`${c.ig ? '@' + c.ig + ' · ' : ''}@${IG}`, 120, W - 110);
+      x.fillStyle = c.deep; x.font = `700 32px ${fam}`; x.fillText(`${IG ? '@' + IG + ' · ' : ''}${t(['奶油动物镇', '크림 동물 마을'])}`, 120, W - 110);
       return cv;
     }
     async function share(p) {
@@ -487,7 +485,7 @@
       else { const a = document.createElement('a'); a.href = cv.toDataURL('image/png'); a.download = file.name; a.click(); }
       try { await navigator.clipboard.writeText(caption); } catch (e) {}
       toast(['卡片已保存、文字已复制，正在打开 Instagram', '카드 저장 · 문구 복사 완료, 인스타그램을 열어요']);
-      setTimeout(() => window.open(`https://www.instagram.com/${c.ig || IG}/`, '_blank'), 900);
+      setTimeout(() => IG && window.open(`https://www.instagram.com/${IG}/`, '_blank'), 900);
       react('recorded', { line: NG.pick(NG.lines.shared) });
     }
     function streak() { const s = new Set(data.posts.map(p => p.d)); let n = 0; const d = new Date(); while (s.has(dayKey(d))) { n++; d.setDate(d.getDate() - 1); } return n; }
@@ -612,8 +610,146 @@
     return data.nights.length > 0 || !!data.sleeping;
   }
 
+  /* ===================================================== dress 储藏室衣橱（马祖豪的想法）
+     QQ 秀式换装：先选一套衣服（9 套 + 原本的样子），再叠帽子、眼镜、颈部、手持、贴纸和背景。
+     拖动配件可以微调位置；搭配可以存 3 套进衣柜，也能拍成 1:1 照片分享。 */
+  function dress() {
+    const A = NG.appCfg;
+    document.body.classList.add('is-dress');
+    const ITEMS = {
+      hat: ['', '🎩', '👒', '🎓', '👑', '🧢', '🎀', '🍄'],
+      glasses: ['', '🕶️', '👓', '🥸'],
+      neck: ['', '🎀', '🧣', '📿', '🏅', '🌼'],
+      hand: ['', '🌰', '🔑', '🎈', '🌂', '💐', '🧁', '📦'],
+      sticker: ['', '✨', '💕', '⭐', '💤', '🌈']
+    };
+    const CATS = [['outfit', ['衣服', '옷'], '👕'], ['hat', ['帽子', '모자'], '🎩'], ['glasses', ['眼镜', '안경'], '👓'], ['neck', ['颈部', '목'], '🎀'],
+      ['hand', ['手持', '손'], '🎈'], ['sticker', ['贴纸', '스티커'], '✨'], ['bg', ['背景', '배경'], '🖼️']];
+    const BGS = [
+      { n: ['奶油色', '크림'], css: `linear-gradient(180deg,#FFF8EC,${c.tint})` },
+      { n: ['储藏室', '저장고'], css: 'repeating-linear-gradient(90deg,#E9CDA8 0 38px,#E2C298 38px 40px),linear-gradient(#E9CDA8,#E9CDA8)' },
+      { n: ['樱花粉', '벚꽃'], css: 'radial-gradient(circle at 20% 25%,#fff 0 6px,transparent 7px),radial-gradient(circle at 75% 60%,#fff 0 5px,transparent 6px),radial-gradient(circle at 45% 85%,#fff 0 4px,transparent 5px),linear-gradient(160deg,#FFE3EA,#F7C6D3)' },
+      { n: ['天空', '하늘'], css: 'linear-gradient(180deg,#BFE3F7,#EAF7FD)' },
+      { n: ['森林', '숲'], img: 'assets/town/forest.jpg' },
+      { n: ['小镇夜晚', '마을의 밤'], img: 'assets/town/night.jpg' }
+    ];
+    const SLOTS = ['hat', 'glasses', 'neck', 'hand', 'sticker'];
+    const blank = () => ({ outfit: 0, hat: '', glasses: '', neck: '', hand: '', sticker: '', bg: 0, off: {} });
+    data.look = data.look || blank(); data.closet = data.closet || [null, null, null];
+    let cat = 'outfit', look = data.look;
+    const base = () => look.outfit ? `${NG.ROOT}assets/${c.id}/outfit/${look.outfit}.png` : `${NG.ROOT}assets/${c.id}/hero.png`;
+    const anchors = () => look.outfit ? A.outfitAnchors : A.anchors;
+    const st = document.createElement('style');
+    st.textContent = `
+      .dr{position:relative;aspect-ratio:1;width:min(100%,42vh);margin:0 auto;border-radius:24px;overflow:hidden;box-shadow:0 8px 26px rgba(0,0,0,.08);touch-action:none;background-size:cover;background-position:center}
+      .dr__fig{position:absolute;left:50%;bottom:4%;height:76%;transform:translateX(-50%);aspect-ratio:var(--ar);transition:opacity .2s}
+      .dr__fig>img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 10px rgba(0,0,0,.12));pointer-events:none;user-select:none;-webkit-user-drag:none}
+      .dr__it{position:absolute;transform:translate(-50%,-50%);line-height:1;cursor:grab;user-select:none;-webkit-user-select:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.12));animation:popIn .3s ease-out}
+      .dr__it.drag{cursor:grabbing;filter:drop-shadow(0 6px 8px rgba(0,0,0,.2))}
+      @keyframes popIn{from{transform:translate(-50%,-50%) scale(.3);opacity:0}}
+      .cats{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+      .cats .chip{flex:none}
+      .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+      .opt{aspect-ratio:1;border-radius:16px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;font-size:30px;border:2.5px solid transparent;padding:4px;overflow:hidden;position:relative}
+      .opt.on{border-color:var(--deep);background:color-mix(in srgb,var(--tint) 55%,#fff)}
+      .opt img{max-width:100%;max-height:100%;object-fit:contain}
+      .opt small{position:absolute;left:0;right:0;bottom:3px;font-size:10px;text-align:center;color:var(--ink-2)}
+      .opt.none{font-size:13px;color:var(--ink-2)}
+      .closet{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+      .slot{border-radius:16px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.05);padding:8px;text-align:center;font-size:12px;color:var(--ink-2);min-height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+      .slot img{height:56px;object-fit:contain}
+      .is-dress .stage{flex-direction:row;gap:10px;padding:4px 16px}.is-dress .stage .char{width:64px;height:64px;margin:0;order:-1;flex:none}.is-dress .stage .bubble{flex:1;font-size:14px;text-align:left}.is-dress .stage .bubble::after{display:none}`;
+    document.head.appendChild(st);
+    function stage() {
+      const bg = BGS[look.bg] || BGS[0], an = anchors(), ar = look.outfit ? '370/396' : '564/718';
+      return `<div class="dr" id="dr" style="${bg.img ? `background-image:url(${NG.ROOT}${bg.img})` : `background:${bg.css}`}">
+        <div class="dr__fig" id="fig" style="--ar:${ar}"><img src="${base()}" alt="">
+          ${SLOTS.map(k => { if (!look[k]) return ''; const [x, y, sz] = an[k], o = look.off[k] || [0, 0];
+            return `<span class="dr__it" data-slot="${k}" style="left:${(x + o[0]) * 100}%;top:${(y + o[1]) * 100}%;font-size:calc(var(--fw) * ${sz} * .62)">${look[k]}</span>`; }).join('')}
+        </div></div>`;
+    }
+    function options() {
+      if (cat === 'outfit') return [0, ...A.outfits.map((_, i) => i + 1)].map(i => `<button class="opt ${look.outfit === i ? 'on' : ''}" data-outfit="${i}" aria-label="${i ? t(A.outfits[i - 1]) : t(['原本的样子', '원래 모습'])}">
+          <img src="${NG.ROOT}assets/${c.id}/${i ? `outfit/${i}.png` : 'hero.png'}" alt="" loading="lazy"></button>`).join('');
+      if (cat === 'bg') return BGS.map((b, i) => `<button class="opt ${look.bg === i ? 'on' : ''}" data-bg="${i}" style="${b.img ? `background:url(${NG.ROOT}${b.img}) center/cover` : `background:${b.css}`}"><small style="background:rgba(255,255,255,.75)">${L(b.n)}</small></button>`).join('');
+      return ITEMS[cat].map(e => `<button class="opt ${e ? '' : 'none'} ${look[cat] === e ? 'on' : ''}" data-item="${e}">${e || L(['不戴', '없음'])}</button>`).join('');
+    }
+    function draw() {
+      main.innerHTML = `
+        ${stage()}
+        <p class="muted center" style="margin:-4px 0 0">${look.outfit ? L(A.outfits[look.outfit - 1]) : L(['原本的样子', '원래 모습'])} · ${L(['拖动配件可以调整位置', '소품을 끌어서 위치 조절'])}</p>
+        <div class="cats">${CATS.map(([k, n, i]) => `<button class="chip ${cat === k ? 'is-on' : ''}" data-cat="${k}">${i} ${L(n)}</button>`).join('')}</div>
+        <div class="grid">${options()}</div>
+        <div class="row"><button class="btn grow" id="rand">🎲 ${L(['随机搭配', '랜덤 코디'])}</button><button class="btn grow" id="reset">↺ ${L(['全部脱下', '모두 벗기'])}</button></div>
+        <div class="card"><h3>👗 ${L(['我的衣柜', '내 옷장'])}</h3>
+          <div class="closet">${data.closet.map((s, i) => `<div class="slot">${s ? `<img src="${NG.ROOT}assets/${c.id}/${s.outfit ? `outfit/${s.outfit}.png` : 'hero.png'}" alt="">
+            <div class="row" style="gap:4px"><button class="btn" style="min-height:36px;padding:0 10px;font-size:12px" data-wear="${i}">${L(['穿上', '입기'])}</button><button class="icon-btn" style="width:36px;height:36px;font-size:16px" data-clear="${i}" aria-label="清空 / 비우기">×</button></div>`
+            : `<button class="btn btn--ghost" style="min-height:44px;padding:0 10px;font-size:13px;white-space:nowrap" data-store="${i}">+ ${L(['存这套', '저장'])}</button>`}</div>`).join('')}</div></div>
+        <button class="btn btn--main btn--wide btn--xl" id="shot">📸 ${L(['拍一张 · 分享', '찰칵 · 공유'])}</button>`;
+      fit(); bindDrag();
+    }
+    function fit() { const f = main.querySelector('#fig'); if (f) f.style.setProperty('--fw', f.clientWidth + 'px'); }
+    function bindDrag() {
+      const fig = main.querySelector('#fig');
+      fig.querySelectorAll('.dr__it').forEach(el => {
+        el.addEventListener('pointerdown', e => {
+          e.preventDefault(); el.setPointerCapture(e.pointerId); el.classList.add('drag');
+          const k = el.dataset.slot, r = fig.getBoundingClientRect(), o = look.off[k] || [0, 0], sx = e.clientX, sy = e.clientY;
+          const move = ev => { const nx = o[0] + (ev.clientX - sx) / r.width, ny = o[1] + (ev.clientY - sy) / r.height; look.off[k] = [nx, ny];
+            const [x, y] = anchors()[k]; el.style.left = (x + nx) * 100 + '%'; el.style.top = (y + ny) * 100 + '%'; };
+          const up = () => { el.classList.remove('drag'); el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); persist(); };
+          el.addEventListener('pointermove', move); el.addEventListener('pointerup', up);
+        });
+      });
+    }
+    function persist() { data.look = look; data.last = dayKey(); save(data); }
+    function wear(changed) { persist(); draw(); if (changed && Math.random() < .6) react('recorded'); }
+    main.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.cat) { cat = b.dataset.cat; draw(); return; }
+      if (b.dataset.outfit != null) { look.outfit = +b.dataset.outfit; look.off = {}; wear(true); return; }
+      if (b.dataset.bg != null) { look.bg = +b.dataset.bg; wear(false); return; }
+      if (b.dataset.item != null) { look[cat] = look[cat] === b.dataset.item ? '' : b.dataset.item; delete look.off[cat]; wear(!!look[cat]); return; }
+      if (b.id === 'rand') {
+        const r = arr => arr[Math.floor(Math.random() * arr.length)];
+        look = { outfit: Math.floor(Math.random() * (A.outfits.length + 1)), bg: Math.floor(Math.random() * BGS.length), off: {} };
+        SLOTS.forEach(k => { look[k] = Math.random() < .55 ? r(ITEMS[k].filter(Boolean)) : ''; });
+        persist(); draw(); react('recorded', { line: NG.pick(NG.lines.random), face: 'surprised' }); return;
+      }
+      if (b.id === 'reset') { look = blank(); persist(); draw(); say(['恢复原样啦，干干净净。', '원래대로 돌아왔어, 깔끔.'], 'happy'); return; }
+      if (b.dataset.store != null) { data.closet[+b.dataset.store] = JSON.parse(JSON.stringify(look)); persist(); draw(); react('done', { line: NG.fill(NG.pick(NG.lines.done), { n: +b.dataset.store + 1 }) }); return; }
+      if (b.dataset.wear != null) { look = JSON.parse(JSON.stringify(data.closet[+b.dataset.wear])); persist(); draw(); say(['换上了！', '갈아입었어!'], 'proud', 'bounce'); return; }
+      if (b.dataset.clear != null) { data.closet[+b.dataset.clear] = null; persist(); draw(); return; }
+      if (b.id === 'shot') shoot();
+    });
+    addEventListener('resize', fit);
+    const loadImg = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
+    async function shoot() {
+      const S = 1080, cv = document.createElement('canvas'); cv.width = cv.height = S; const x = cv.getContext('2d');
+      const bg = BGS[look.bg] || BGS[0];
+      if (bg.img) { const im = await loadImg(NG.ROOT + bg.img); if (im) { const k = Math.max(S / im.width, S / im.height); x.drawImage(im, (S - im.width * k) / 2, (S - im.height * k) / 2, im.width * k, im.height * k); } }
+      else { const g = x.createLinearGradient(0, 0, 0, S); const cols = (bg.css.match(/#[0-9A-Fa-f]{6}/g) || ['#FFF8EC', c.tint]); g.addColorStop(0, cols[0]); g.addColorStop(1, cols[cols.length - 1]); x.fillStyle = g; x.fillRect(0, 0, S, S); }
+      const im = await loadImg(base()); if (!im) return;
+      const fh = S * .76, fw = fh * im.width / im.height, fx = (S - fw) / 2, fy = S * .96 - fh;
+      x.save(); x.shadowColor = 'rgba(0,0,0,.12)'; x.shadowBlur = 20; x.shadowOffsetY = 10; x.drawImage(im, fx, fy, fw, fh); x.restore();
+      const an = anchors();
+      SLOTS.forEach(k => { if (!look[k]) return; const [ax, ay, sz] = an[k], o = look.off[k] || [0, 0];
+        x.font = `${fw * sz * .62}px sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(look[k], fx + (ax + o[0]) * fw, fy + (ay + o[1]) * fh); });
+      x.fillStyle = 'rgba(255,255,255,.85)'; x.fillRect(0, S - 64, S, 64);
+      x.fillStyle = c.deep; x.font = `700 30px ${getComputedStyle(document.body).fontFamily}`; x.textAlign = 'left'; x.textBaseline = 'middle';
+      x.fillText(`${t(c.name)} · ${t(A.name)}${c.ig ? '  @' + c.ig : ''}`, 32, S - 32);
+      const blob = await new Promise(r => cv.toBlob(r, 'image/png')), file = new File([blob], `${c.id}-look.png`, { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], text: `#奶油动物镇 #${t(c.name)}` }); } catch (e) {} return; }
+      if (window.AndroidBridge && AndroidBridge.saveImage) { toast(AndroidBridge.saveImage(cv.toDataURL('image/png')) ? ['照片已存到相册', '사진을 앨범에 저장했어'] : ['这台手机暂时不能保存', '이 폰에선 저장이 안 돼요']); return; }
+      const a = document.createElement('a'); a.href = cv.toDataURL('image/png'); a.download = file.name; a.click();
+      toast(['照片已保存', '사진을 저장했어']); say(['咔嚓！拍得真好看。', '찰칵! 잘 나왔다.'], 'proud', 'bounce');
+    }
+    draw();
+    return !!data.last;
+  }
+
   /* —— 启动 —— */
-  const run = { mood, todo: () => list('todo'), idea: () => list('idea'), habit, water, lend, focus, diary, feed, sleep }[mode];
+  const run = { mood, todo: () => list('todo'), idea: () => list('idea'), habit, water, lend, focus, diary, feed, sleep, dress }[mode];
   const res = run();
   const has = typeof res === 'object' ? res.has : res;
   NG.introCards(data, () => {

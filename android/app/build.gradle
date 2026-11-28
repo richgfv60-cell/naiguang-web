@@ -50,7 +50,7 @@ tasks.register('copyWeb', Sync) {
     into www.map { it.dir('www') }
     from(site) {
         include 'apps.html', 'data.js', 'app/**', 'characters/**', 'trip/**',
-                'assets/*/face/*.png', 'assets/town/forest.jpg', 'assets/town/night.jpg'
+                'assets/*/face/*.png', 'assets/*/outfit/*.png', 'assets/*/hero.png', 'assets/naitu/ig-qr.png', 'assets/town/forest.jpg', 'assets/town/night.jpg'
         exclude '**/*.apk', 'trip/icon-full.png', 'app/icons/town-full.png'
     }
 }

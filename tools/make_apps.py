@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-V = '20261129e'
+V = '20261130'
 
 data_js = (ROOT / 'data.js').read_text(encoding='utf-8')
 chars_js = (ROOT / 'app/chars.js').read_text(encoding='utf-8')

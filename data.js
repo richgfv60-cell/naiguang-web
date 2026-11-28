@@ -220,6 +220,7 @@ const CHARACTERS = [
     name: { zh: '奶兔', ko: '우유 토끼' },
     role: { zh: '情绪治愈官', ko: '감정 치유사' },
     member: { zh: '王嘉诚', ko: '왕가성', sid: '202323150' },
+    ig: 'zebra.67638086', igQr: 'ig-qr.png',   /* 角色设计者的 Instagram + 二维码（assets/naitu/） */
     tint: '#F9DFDA', deep: '#9A5058',
     palette: ['#FEFDEB', '#F8D4CB', '#F3C4BE', '#C4A29D', '#7E4044'],
     word: { zh: '治愈', ko: '치유' },
@@ -593,6 +594,7 @@ const CHARACTERS = [
     name: { zh: '奶仓', ko: '우유 햄스터' },
     role: { zh: '小镇保管员', ko: '마을 관리인' },
     member: { zh: '马祖豪', ko: '마쭈하오', sid: '202323160' },
+    ig: 'herryzzzzz1',   /* 角色设计者的 Instagram */
     tint: '#FBE6CC', deep: '#985A3C',
     palette: ['#FDEAC7', '#F7D1B3', '#E19A6C', '#A2624A', '#6A2E29'],
     word: { zh: '谨慎', ko: '신중' },
