@@ -82,7 +82,7 @@ const APPS = {
     sentence: ['奶企在我按计划打卡时看表核对，全部完成就宣布「准时达成」。', '우유 펭귄은 내가 계획대로 체크하면 시계를 확인하고, 다 끝내면 「정시 달성」을 선언해요.'],
     appA: { mode: 'habit', name: ['今日打卡', '오늘의 체크'], sub: ['每日习惯打卡', '하루 습관 체크'] },
     appB: { mode: 'match', name: ['整理翻牌', '정리 카드 짝'], sub: ['翻牌配对', '카드 짝 맞추기'] },
-    /* 组员新增（陈舒新）：冰面上跳一下，踩过的冰块会消失 */
+    /* 陈舒新的想法：冰面上跳一下，踩过的冰块会消失 */
     appC: { mode: 'ice', kind: 'game', by: 'naiqi', name: ['冰面跳一跳', '빙판 점프'], sub: ['踩过的冰块会消失', '밟은 얼음은 사라져'],
       game: {
         ready: ['每块冰只能踩一次，踩过就会融化。规划好路线，把冰面上的冰块全部踩完 ⏰', '얼음은 한 번만 밟을 수 있고, 밟으면 녹아. 길을 계획해서 얼음을 모두 밟자 ⏰'],
@@ -240,7 +240,7 @@ const APPS = {
     sentence: ['奶熊在我专注的时候守在旁边，我一离开页面，它就原地石化等我回来。', '우유 곰은 내가 집중하는 동안 옆을 지키고, 페이지를 떠나면 그 자리에서 굳은 채 기다려요.'],
     appA: { mode: 'focus', name: ['守护专注', '집중 지킴이'], sub: ['专注计时', '집중 타이머'] },
     appB: { mode: 'catch', name: ['软垫接接乐', '쿠션 받기'], sub: ['接掉落物', '떨어지는 아이템 받기'] },
-    /* 组员新增（董昊鑫）：记录角色的日常、故事、心情，并和社交账号联动 */
+    /* 董昊鑫的想法：记录角色的日常、故事、心情，并和社交账号联动 */
     appC: { mode: 'feed', kind: 'record', by: 'naixiong', name: ['小石屋日记', '돌집 일기'], sub: ['日常 · 故事 · 心情 · 社交', '일상 · 이야기 · 기분 · SNS'],
       social: 'zebra.67638086',
       intro: {
@@ -356,6 +356,9 @@ const APPS = {
    制作署名：默认由组长制作；组员提出要求的应用写组员本人（app.by = 角色 id）
    ========================================================================== */
 const APP_LEADER = 'naitu';   // 组长 = 奶兔的设计者
+/* 这些角色的应用是组员自己的想法：房间里所有应用都署组员本人（奶兔是组长自己的） */
+const APP_OWN = ['naiqi', 'naihaibao', 'naixiong'];
+APP_OWN.forEach(id => ['appA', 'appB', 'appC', 'appD'].forEach(k => { if (APPS[id][k] && !APPS[id][k].by) APPS[id][k].by = id; }));
 function appCredit(app) {
   const id = (app && app.by) || APP_LEADER;
   const m = CHARACTERS.find(c => c.id === id).member;

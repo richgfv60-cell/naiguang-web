@@ -414,9 +414,13 @@
       const list = data.posts.filter(p => filter === 'all' || p.type === filter);
       const tName = k => TYPES.find(x => x[0] === k);
       main.innerHTML = `
-        <div class="card social"><img src="${NG.ROOT}app/icons/town-192.png" alt="">
-          <div class="grow"><b>@${IG}</b><span class="muted">${L(['奶油动物镇的官方 Instagram', '크림 동물 마을 공식 인스타그램'])}</span></div>
-          <a class="ig" href="https://www.instagram.com/${IG}/" target="_blank" rel="noopener">${L(['关注', '팔로우'])}</a></div>
+        <div class="card" style="display:flex;flex-direction:column;gap:12px">
+          ${c.ig ? `<div class="social"><img src="${face('happy')}" alt="">
+            <div class="grow"><b>@${c.ig}</b><span class="muted">${L([`${c.name.zh}的 Instagram`, `${c.name.ko}의 인스타그램`])}</span></div>
+            <a class="ig" href="https://www.instagram.com/${c.ig}/" target="_blank" rel="noopener">${L(['关注', '팔로우'])}</a></div>` : ''}
+          <div class="social"><img src="${NG.ROOT}app/icons/town-192.png" alt="">
+            <div class="grow"><b>@${IG}</b><span class="muted">${L(['奶油动物镇的官方 Instagram', '크림 동물 마을 공식 인스타그램'])}</span></div>
+            <a class="ig" href="https://www.instagram.com/${IG}/" target="_blank" rel="noopener">${L(['关注', '팔로우'])}</a></div></div>
         ${official.length ? `<div class="card"><h3>📌 ${L([`${c.name.zh}已经发布的故事`, `${c.name.ko}가 올린 이야기`])}</h3>
           <div class="pins">${official.map(o => `<a class="pin" href="${NG.ROOT}character.html?id=${c.id}#${o.video ? 'shorts' : 'comics'}"><img src="${NG.ROOT}${o.img}" alt="" loading="lazy"><span>${o.video ? '▶ ' : ''}${L(o.type)}</span><b>${L(o.title)}</b></a>`).join('')}</div></div>` : ''}
         <div class="card">
@@ -468,7 +472,7 @@
         if (ch === '\n' || x.measureText(line + ch).width > maxW) { x.fillText(line, 120, y + lh); y += lh; line = ch === '\n' ? '' : ch; if (y > W - 220) break; } else line += ch;
       }
       if (line && y <= W - 220) x.fillText(line, 120, y + lh);
-      x.fillStyle = c.deep; x.font = `700 32px ${fam}`; x.fillText(`@${IG} · ${t(['奶油动物镇', '크림 동물 마을'])}`, 120, W - 110);
+      x.fillStyle = c.deep; x.font = `700 32px ${fam}`; x.fillText(`${c.ig ? '@' + c.ig + ' · ' : ''}@${IG}`, 120, W - 110);
       return cv;
     }
     async function share(p) {
@@ -483,7 +487,7 @@
       else { const a = document.createElement('a'); a.href = cv.toDataURL('image/png'); a.download = file.name; a.click(); }
       try { await navigator.clipboard.writeText(caption); } catch (e) {}
       toast(['卡片已保存、文字已复制，正在打开 Instagram', '카드 저장 · 문구 복사 완료, 인스타그램을 열어요']);
-      setTimeout(() => window.open(`https://www.instagram.com/${IG}/`, '_blank'), 900);
+      setTimeout(() => window.open(`https://www.instagram.com/${c.ig || IG}/`, '_blank'), 900);
       react('recorded', { line: NG.pick(NG.lines.shared) });
     }
     function streak() { const s = new Set(data.posts.map(p => p.d)); let n = 0; const d = new Date(); while (s.has(dayKey(d))) { n++; d.setDate(d.getDate() - 1); } return n; }

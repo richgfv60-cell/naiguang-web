@@ -661,6 +661,7 @@ const CHARACTERS = [
     name: { zh: '奶熊', ko: '우유 곰' },
     role: { zh: '可靠守护者', ko: '믿음직한 수호자' },
     member: { zh: '董昊鑫', ko: '둥하오신', sid: '202323162' },
+    ig: 'naixiong2026',   /* 角色设计者的 Instagram */
     tint: '#F4E2CC', deep: '#87543F',
     palette: ['#FCF4DE', '#F9E2C4', '#EAC2AC', '#CF9279', '#6B3630'],
     word: { zh: '厚重', ko: '듬직함' },
@@ -731,6 +732,7 @@ const CHARACTERS = [
     name: { zh: '奶小熊猫', ko: '우유 레서판다' },
     role: { zh: '故事记录员', ko: '이야기 기록자' },
     member: { zh: '陶朝伟', ko: '도조위', sid: '202323169' },
+    ig: 'naixiaoxionmao.666',   /* 角色设计者的 Instagram */
     tint: '#F4D8C8', deep: '#9B4A37',
     palette: ['#FCF6E6', '#ECB598', '#DB967E', '#B56959', '#682721'],
     word: { zh: '探索', ko: '탐구' },
