@@ -450,6 +450,7 @@ const CHARACTERS = [
     name: { zh: '奶海豹', ko: '우유 바다표범' },
     role: { zh: '氛围调节员', ko: '분위기 조절자' },
     member: { zh: '张玉洋', ko: '장위양', sid: '202323120' },
+    ig: 'xiaochaoyang08',   /* 角色设计者的 Instagram（选填） */
     tint: '#D9E4E8', deep: '#4D6876',
     palette: ['#FDFAE8', '#BECCD0', '#9BA3A9', '#F4CFAB', '#5E3332'],
     word: { zh: '松弛', ko: '느긋함' },

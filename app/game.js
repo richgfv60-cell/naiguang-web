@@ -8,7 +8,7 @@
   const { c, cfg, L, t, esc, load, save, dayKey, face, react, say, toast, sfx, pick } = NG;
   const G = cfg.game;
   const mode = cfg.appB.mode;
-  const main = NG.shell({ mute: ['catch', 'whack', 'match', 'reaction'].includes(mode), small: true });
+  const main = NG.shell({ mute: ['catch', 'whack', 'match', 'reaction', 'hop'].includes(mode), small: true });
   const data = load();
   const T = (zh, ko) => [zh, ko];
   const style = document.createElement('style');
@@ -427,5 +427,157 @@
     draw(); say(G.ready, 'happy', 'wave');
   }
 
-  ({ ball, fortune, quiz, match, reaction, whack, catch: catchGame })[mode]();
+  /* ===================================================== hop 焦虑跳一跳
+     按住蓄力 → 松手起跳；跳到写着焦虑词的礁石上就算「跳过去了」，掉进海里本局结束 */
+  function hop() {
+    const words = G.words;
+    let cv, ctx, W, H, dpr, raf = 0, last = 0;
+    let plats, cur, camX, camTo, seal, score, combo, state, power, chargeT, jump, splash, t0, wordIdx;
+    const img = {};
+    ['happy', 'surprised', 'love', 'proud', 'sad'].forEach(f => { const i = new Image(); i.src = face(f); img[f] = i; });
+    let sealFace = 'happy';
+    const SEAL = () => Math.min(64, W * .17);
+    const TOP = () => H * .6;
+    function draw() {
+      main.innerHTML = `
+        <div class="hud"><span>${L(T('跳过', '넘은 불안'))} <b id="sc">0</b></span><span>${L(T('最佳', '최고'))} ${data.best || 0}</span></div>
+        <div class="playfield" id="pf" style="background:#DDF2FB">
+          <canvas id="cv" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas>
+          <div class="overlay" id="ov"><h2>${L(cfg.appB.name)}</h2><p>${L(G.ready)}</p>
+            <button class="btn btn--main btn--xl" id="go">${L(T('开始', '시작'))}</button></div>
+        </div>
+        <p class="muted center">${L(T('按住屏幕蓄力，松手起跳。落在礁石正中间有加分！', '화면을 꾹 눌러 힘을 모으고, 떼면 점프! 바위 한가운데 착지하면 보너스!'))}</p>`;
+      cv = main.querySelector('#cv'); ctx = cv.getContext('2d'); size();
+    }
+    function size() {
+      const r = cv.getBoundingClientRect(); dpr = Math.min(2, devicePixelRatio || 1);
+      W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    function nextWord() { const w = words[wordIdx % words.length]; wordIdx++; return { zh: w[0], ko: w[1] }; }
+    function newPlat(prev) {
+      const lvl = Math.min(score, 30);
+      const w = Math.max(44, rand(78, 110) - lvl * 1.6);
+      const gap = rand(40, 70) + lvl * 3 + rand(0, 50);
+      return { x: prev.x + prev.w + gap, w, y: TOP() + rand(-26, 22), word: nextWord(), done: false };
+    }
+    const rand = (a, b) => a + Math.random() * (b - a);
+    function reset() {
+      score = 0; combo = 0; wordIdx = Math.floor(Math.random() * words.length);
+      const first = { x: W * .08, w: 110, y: TOP(), word: null, done: true };
+      plats = [first]; plats.push(newPlat(first)); plats.push(newPlat(plats[1]));
+      cur = 0; camX = camTo = 0;
+      seal = { x: first.x + first.w / 2, y: first.y, sq: 0 };
+      state = 'idle'; power = 0; splash = null; sealFace = 'happy';
+      main.querySelector('#sc').textContent = 0;
+    }
+    /* —— 画面 —— */
+    function wave(yBase, amp, len, speed, color, t) {
+      ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, H);
+      for (let x = 0; x <= W + 10; x += 8) ctx.lineTo(x, yBase + Math.sin((x + camX * .3) / len + t * speed) * amp);
+      ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    }
+    function roundRect(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+    function render(t) {
+      const sky = ctx.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#EAF7FD'); sky.addColorStop(1, '#C9E9F6');
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#FFF3C8'; ctx.beginPath(); ctx.arc(W * .82 - camX * .05 % W, H * .14, 22, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.9)';
+      [[.18, .12], [.55, .2], [1.1, .1]].forEach(([fx, fy]) => { const x = ((fx * W - camX * .15) % (W + 120) + W + 120) % (W + 120) - 60; ctx.beginPath(); ctx.ellipse(x, H * fy, 30, 11, 0, 0, Math.PI * 2); ctx.ellipse(x + 22, H * fy + 4, 22, 9, 0, 0, Math.PI * 2); ctx.fill(); });
+      wave(H * .7, 5, 38, 1.1, '#A9DCF0', t);
+      // 礁石
+      plats.forEach((p, i) => {
+        const x = p.x - camX; if (x > W + 40 || x + p.w < -40) return;
+        ctx.fillStyle = 'rgba(70,110,130,.12)'; roundRect(x + 4, p.y + 6, p.w, H - p.y, 16); ctx.fill();
+        ctx.fillStyle = p.done ? '#F2E6D3' : '#FFF8EE'; roundRect(x, p.y, p.w, H - p.y, 16); ctx.fill();
+        ctx.fillStyle = p.done ? '#E2D2B8' : '#F3E3CB'; roundRect(x, p.y, p.w, 12, 8); ctx.fill();
+        if (p.word) {
+          ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          const fs = Math.max(12, Math.min(17, p.w / Math.max(2.2, t2(p.word).length) * 1.1));
+          ctx.font = `800 ${fs}px ${getComputedStyle(document.body).fontFamily}`;
+          ctx.fillStyle = p.done ? '#B9A88E' : c.deep; ctx.fillText(t2(p.word), x + p.w / 2, p.y + 34);
+          if (p.done) { ctx.strokeStyle = '#B9A88E'; ctx.lineWidth = 2; const tw = ctx.measureText(t2(p.word)).width; ctx.beginPath(); ctx.moveTo(x + p.w / 2 - tw / 2 - 2, p.y + 34); ctx.lineTo(x + p.w / 2 + tw / 2 + 2, p.y + 34); ctx.stroke(); }
+          ctx.restore();
+        }
+        if (i === cur + 1 && state !== 'fall') { ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.beginPath(); ctx.arc(x + p.w / 2, p.y + 6, 3, 0, Math.PI * 2); ctx.fill(); }
+      });
+      // 海豹
+      const s = SEAL(), im = img[sealFace];
+      if (im && im.complete && im.naturalWidth) {
+        const h = s * (1 - seal.sq * .28), w = s * (1 + seal.sq * .12) * im.naturalWidth / im.naturalHeight;
+        ctx.drawImage(im, seal.x - camX - w / 2, seal.y - h, w, h);
+      }
+      // 蓄力条
+      if (state === 'charge') { ctx.fillStyle = 'rgba(255,255,255,.8)'; roundRect(seal.x - camX - 26, seal.y - s - 18, 52, 7, 4); ctx.fill(); ctx.fillStyle = c.deep; roundRect(seal.x - camX - 26, seal.y - s - 18, 52 * power, 7, 4); ctx.fill(); }
+      wave(H * .82, 6, 30, 1.7, '#8CCDE8', t + 1);
+      wave(H * .9, 5, 24, 2.2, '#73BFE0', t + 2);
+      if (splash) { const k = splash.k; ctx.strokeStyle = `rgba(255,255,255,${1 - k})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(splash.x - camX, H * .83, 10 + k * 40, 4 + k * 10, 0, 0, Math.PI * 2); ctx.stroke(); }
+    }
+    const t2 = w => t(w);
+    /* —— 逻辑 —— */
+    function loop(now) {
+      const dt = Math.min(.05, (now - last) / 1000); last = now; const tt = now / 1000;
+      if (state === 'charge') { power = Math.min(1, power + dt / 1.1); seal.sq = power; }
+      if (state === 'air') {
+        jump.k = Math.min(1, jump.k + dt / jump.T);
+        seal.x = jump.x0 + jump.d * jump.k;
+        seal.y = jump.y0 + (jump.y1 - jump.y0) * jump.k - 4 * jump.h * jump.k * (1 - jump.k);
+        if (jump.k >= 1) land();
+      }
+      if (state === 'fall') { seal.y += 360 * dt; if (seal.y > H * .86 && !splash) { splash = { x: seal.x, k: 0 }; sfx('bad'); } if (splash) { splash.k = Math.min(1, splash.k + dt * 1.6); if (splash.k >= 1) end(); } }
+      if (state === 'idle' && seal.sq > 0) seal.sq = Math.max(0, seal.sq - dt * 6);
+      camX += (camTo - camX) * Math.min(1, dt * 6);
+      render(tt);
+      if (state !== 'over') raf = requestAnimationFrame(loop);
+    }
+    function press() { if (state !== 'idle') return; state = 'charge'; power = 0; sealFace = 'surprised'; }
+    function release() {
+      if (state !== 'charge') return;
+      const from = plats[cur], maxD = W * .95;
+      const d = 20 + power * maxD;
+      const target = seal.x + d;
+      const tp = plats.find((p, i) => i > cur && target >= p.x && target <= p.x + p.w) || (target <= from.x + from.w ? from : null);
+      jump = { x0: seal.x, y0: seal.y, d, y1: tp ? tp.y : seal.y, h: 50 + power * 70, k: 0, T: .45 + power * .25, tp };
+      state = 'air'; seal.sq = 0; sealFace = 'love'; sfx('tap');
+    }
+    function land() {
+      const p = jump.tp;
+      if (!p) { state = 'fall'; sealFace = 'sad'; say(pick(G.fall), 'sad', 'shake'); return; }
+      seal.y = p.y; state = 'idle'; sealFace = 'happy';
+      const idx = plats.indexOf(p);
+      if (idx === cur) return;
+      const perfect = Math.abs(seal.x - (p.x + p.w / 2)) < Math.max(6, p.w * .12);
+      combo = perfect ? combo + 1 : 0;
+      score += perfect ? 1 + combo : 1;
+      main.querySelector('#sc').textContent = score;
+      p.done = true; cur = idx;
+      while (plats.length < cur + 3) plats.push(newPlat(plats[plats.length - 1]));
+      camTo = seal.x - W * .25;
+      sfx(perfect ? 'done' : 'good'); sealFace = perfect ? 'proud' : 'happy';
+      const line = NG.fill(pick(perfect ? G.perfect : G.over), { w: p.word });
+      say(line, perfect ? 'proud' : 'happy', perfect ? 'jump' : 'bounce');
+      if (perfect) NG.celebrate();
+    }
+    function end() {
+      state = 'over'; cancelAnimationFrame(raf);
+      const isBest = score > (data.best || 0); if (isBest) data.best = score; data.plays = (data.plays || 0) + 1; save(data);
+      const ov = main.querySelector('#ov'); ov.hidden = false;
+      ov.innerHTML = `<h2>${L(T(`跳过了 ${score} 个焦虑`, `불안 ${score}개를 넘었어`))}</h2><p>${L(endLine(score, 15, 6))}</p>${isBest ? `<p>🏆 ${L(T('新纪录', '신기록'))}</p>` : `<p class="muted">${L(T('最佳', '최고'))} ${data.best}</p>`}
+        <button class="btn btn--main btn--xl" id="go">${L(T('再跳一次', '다시 점프'))}</button>`;
+      say(endLine(score, 15, 6), endFace(score, 15, 6), 'jump'); sfx('end');
+    }
+    function start() {
+      main.querySelector('#ov').hidden = true; size(); reset();
+      say(T('别紧张啦～一个一个跳过去就好 ☁️', '긴장하지 마~ 하나씩 뛰어넘으면 돼 ☁️'), 'happy', 'bounce');
+      cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(loop);
+    }
+    main.addEventListener('click', e => { if (e.target.closest('#go')) start(); });
+    main.addEventListener('pointerdown', e => { if (e.target.closest('#cv')) { e.preventDefault(); press(); } });
+    addEventListener('pointerup', release); addEventListener('pointercancel', release);
+    addEventListener('keydown', e => { if (e.code === 'Space' && !e.repeat) { e.preventDefault(); press(); } });
+    addEventListener('keyup', e => { if (e.code === 'Space') release(); });
+    addEventListener('resize', () => { if (cv) size(); });
+    draw(); reset(); render(0); say(G.ready, 'happy', 'wave');
+  }
+
+  ({ ball, fortune, quiz, match, reaction, whack, hop, catch: catchGame })[mode]();
 })();

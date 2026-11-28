@@ -1176,3 +1176,9 @@ a.next-link:hover { transform: translateY(-4px); }
 .trip-install[hidden] { display: none; }
 .trip-install ol { list-style: decimal; margin: 0; padding-left: 22px; color: var(--ink-2); line-height: 1.9; }
 .trip-install p { margin: 8px 0 12px; color: var(--ink-2); font-size: 14px; line-height: 1.6; }
+
+.panel__ig { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; min-height: 40px; padding: 0 16px; border-radius: 20px;
+  background: linear-gradient(90deg, #F58529, #DD2A7B 60%, #8134AF); color: #fff; font-weight: 700; font-size: 15px; }
+.panel__ig .insta__logo { width: 18px; height: 18px; border-radius: 6px; background: rgba(255, 255, 255, .25); }
+.panel__ig .insta__logo::before { inset: 4px; }
+.panel__ig .insta__logo::after { top: 3px; right: 3px; }
