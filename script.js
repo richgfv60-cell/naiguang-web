@@ -1198,6 +1198,23 @@ function renderCharacter() {
 
   /* —— 首屏：名字退场 → 立绘放大 → 一句话出现 —— */
   const heroText = $('.ch-hero__text'), heroImg = $('.ch-hero__img'), heroLine = $('.ch-hero__line');
+  /* 立绘高度按屏幕实际剩余空间算：不管手机、平板还是电脑，图都不会盖住上面的名字和那句话 */
+  function fitHero() {
+    const stage = $('.ch-hero__stage');
+    if (!stage || getComputedStyle(heroImg).position !== 'absolute') { heroImg.style.height = ''; return; }
+    const H = stage.clientHeight, gap = 16;
+    const bottom = parseFloat(getComputedStyle(heroImg).bottom) || 0;
+    const nameBottom = heroText.offsetTop + heroText.offsetHeight;
+    const lineBottom = heroLine.offsetTop + heroLine.offsetHeight;
+    const cap = H * (innerWidth <= 733 ? 0.48 : 0.58);
+    // 开场：图顶在名字下面；滚动后图会上移 4% 屏高并放大 10%，图顶仍要在那句话下面
+    const h = Math.min(cap, H - bottom - nameBottom - gap, (H - bottom - H * 0.04 - lineBottom - gap) / 1.05);
+    heroImg.style.height = Math.max(160, h) + 'px';
+  }
+  fitHero();
+  addEventListener('resize', fitHero);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHero);
+  heroImg.addEventListener('load', fitHero);
   addScene({
     el: $('#chHero'),
     update(y, vh) {

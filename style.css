@@ -686,7 +686,8 @@ body.page-character { background: linear-gradient(180deg, var(--c-tint) 0, var(-
   padding: 0 var(--gutter);
   will-change: transform, opacity;
 }
-.ch-hero__name { font-size: clamp(72px, 15vw, 210px); font-weight: 800; line-height: 1.05; letter-spacing: .02em; color: var(--c-deep); }
+.ch-hero__text { z-index: 2; }
+.ch-hero__name { font-size: clamp(56px, min(15vw, 24vh), 210px); font-weight: 800; line-height: 1.05; letter-spacing: .02em; color: var(--c-deep); }
 .ch-hero__name .l-ko { font-size: .6em; letter-spacing: 0; }
 .ch-hero__img {
   position: absolute;
@@ -707,10 +708,11 @@ body.page-character { background: linear-gradient(180deg, var(--c-tint) 0, var(-
   top: calc(var(--nav-h) + 9vh);
   padding: 0 var(--gutter);
   text-align: center;
-  font-size: clamp(28px, 4.6vw, 60px);
+  font-size: clamp(24px, min(4.6vw, 6.5vh), 60px);
   font-weight: 700;
   line-height: 1.25;
   text-wrap: balance;
+  z-index: 2;
   opacity: 0;
   will-change: transform, opacity;
 }
