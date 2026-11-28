@@ -1172,6 +1172,7 @@ function renderCharacter() {
             <div class="panel__label">${L({ zh: '角色设计', ko: '캐릭터 디자인' })}</div>
             <div class="panel__title">${c.member.zh} · ${c.member.ko}</div>
             <p class="panel__text">${c.member.sid}</p>
+            ${c.douyin ? `<a class="panel__ig panel__dy" href="${c.douyin}" target="_blank" rel="noopener"><i class="dy__logo" aria-hidden="true">♪</i>${L({ zh: '抖音', ko: '더우인' })}</a>` : ''}
             ${c.ig ? `<a class="panel__ig" href="https://www.instagram.com/${c.ig}/" target="_blank" rel="noopener"><i class="insta__logo" aria-hidden="true"></i>@${c.ig}</a>` : ''}
           </div>
           <div class="panel" data-reveal style="--d:.08s">

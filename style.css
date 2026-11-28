@@ -1186,3 +1186,6 @@ a.next-link:hover { transform: translateY(-4px); }
 .panel__ig .insta__logo::after { top: 3px; right: 3px; }
 
 .app-room__by { font-style: normal; font-size: 12px; font-weight: 700; color: var(--c-deep); opacity: .75; margin-top: 2px; }
+
+.panel__dy { background: #161823; box-shadow: -2px 0 0 #25F4EE inset, 2px 0 0 #FE2C55 inset; margin-right: 8px; }
+.dy__logo { font-style: normal; font-weight: 900; color: #fff; text-shadow: -1.5px 0 #25F4EE, 1.5px 0 #FE2C55; }

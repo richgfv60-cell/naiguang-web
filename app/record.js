@@ -516,8 +516,104 @@
     return data.posts.length > 0;
   }
 
+  /* ===================================================== sleep 睡眠侦查（岳耀森）
+     睡前点「我要睡了」，醒来点「我醒了」；忘了点可以手动补记。
+     记录：几点睡、几点醒、睡了多久、睡得怎么样；最近 7 天柱状图 + 侦查报告。不扣分。 */
+  function sleep() {
+    data.nights = data.nights || [];
+    const Q = [['sleep', ['很香', '꿀잠']], ['happy', ['还行', '괜찮음']], ['surprised', ['醒了几次', '몇 번 깸']], ['sad', ['没睡好', '잘 못 잠']]];
+    let quality = 'happy', ask = null, manual = false, tBed = '23:30', tWake = '07:30';
+    const hm = ts => { const d = new Date(ts); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+    const dur = n => (n.end - n.start) / 36e5;
+    const fmtH = h => { const m = Math.round(h * 60); return NG.lang() === 'ko' ? `${Math.floor(m / 60)}시간 ${m % 60}분` : `${Math.floor(m / 60)} 小时 ${m % 60} 分`; };
+    const bedMin = ts => { const d = new Date(ts); let m = d.getHours() * 60 + d.getMinutes(); if (m < 12 * 60) m += 24 * 60; return m; };   // 凌晨算作前一晚之后
+    const clock = m => { m = Math.round(m) % (24 * 60); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
+    function add(start, end, q) {
+      const n = { id: Date.now().toString(36), start, end, q, d: dayKey(new Date(end)) };
+      data.nights = data.nights.filter(x => x.d !== n.d); data.nights.unshift(n); data.nights.sort((a, b) => b.end - a.end); data.nights = data.nights.slice(0, 120);
+      data.last = dayKey(); save(data);
+      const h = dur(n);
+      if (h >= 7 && h <= 10) react('done', { face: 'proud' });
+      else if (h < 6) react('recorded', { line: NG.pick(NG.lines.short), face: 'sad' });
+      else if (bedMin(start) >= 25 * 60) react('recorded', { line: NG.pick(NG.lines.late), face: 'surprised' });
+      else react('recorded');
+    }
+    function report() {
+      const week = data.nights.filter(n => (Date.now() - n.end) < 7 * 864e5);
+      if (!week.length) return '';
+      const avg = week.reduce((a, n) => a + dur(n), 0) / week.length;
+      const bed = week.map(n => bedMin(n.start)), avgBed = bed.reduce((a, b) => a + b, 0) / bed.length;
+      const spread = Math.max(...bed) - Math.min(...bed);
+      const good = week.filter(n => n.q === 'sleep' || n.q === 'happy').length;
+      const lines = [
+        [`平均睡了 ${fmtH(avg)}`, `평균 ${fmtH(avg)} 잤어`],
+        [`平均 ${clock(avgBed)} 睡着`, `평균 ${clock(avgBed)}에 잠들었어`],
+        spread <= 60 ? ['入睡时间很规律 👍', '잠드는 시간이 아주 규칙적이야 👍'] : [`入睡时间前后差了 ${Math.round(spread / 60 * 10) / 10} 小时`, `잠드는 시간이 ${Math.round(spread / 60 * 10) / 10}시간 차이 나`],
+        [`${week.length} 晚里有 ${good} 晚睡得不错`, `${week.length}번 중 ${good}번은 잘 잤어`]
+      ];
+      const verdict = avg >= 7 ? ['结论：睡眠充足。……哼，还行。', '결론: 수면 충분. …흥, 괜찮네.'] : avg >= 6 ? ['结论：再早睡一点点就完美了。', '결론: 조금만 일찍 자면 완벽해.'] : ['结论：最近有点缺觉，今晚早点休息吧。', '결론: 요즘 잠이 부족해. 오늘은 일찍 쉬자.'];
+      return `<div class="card"><h3>🔍 ${L(['本周侦查报告', '이번 주 수사 보고서'])}</h3><ul class="list" style="gap:4px">${lines.map(l => `<li>· ${L(l)}</li>`).join('')}</ul><p style="margin:10px 0 0;font-weight:700;color:var(--deep)">${L(verdict)}</p></div>`;
+    }
+    function draw() {
+      const now = Date.now(), sl = data.sleeping;
+      const days = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(dayKey(d)); }
+      const wdN = { zh: ['日', '一', '二', '三', '四', '五', '六'], ko: ['일', '월', '화', '수', '목', '금', '토'] };
+      const wd = k => { const [y, m, d] = k.split('-').map(Number); const w = new Date(y, m - 1, d).getDay(); return L([wdN.zh[w], wdN.ko[w]]); };
+      const yday = new Date(); yday.setDate(yday.getDate() - 1);
+      main.innerHTML = `
+        <div class="card center">
+          ${sl ? `<div class="big" style="font-size:28px">🌙 ${L(['睡眠中', '자는 중'])}</div><p class="muted">${L([`${hm(sl.start)} 开始 · 已经 ${fmtH((now - sl.start) / 36e5)}`, `${hm(sl.start)} 시작 · ${fmtH((now - sl.start) / 36e5)} 지남`])}</p>
+                 <button class="btn btn--main btn--wide btn--xl" id="wake">☀️ ${L(['我醒了', '일어났어'])}</button>
+                 <button class="btn btn--ghost btn--wide" id="cancel" style="margin-top:8px">${L(['点错了，取消', '잘못 눌렀어, 취소'])}</button>`
+             : `<button class="btn btn--main btn--wide btn--xl" id="bed">🌙 ${L(['我要睡了', '이제 잘게'])}</button>
+                 <button class="btn btn--ghost btn--wide" id="manual" style="margin-top:8px">✏️ ${L(['手动补记昨晚', '어젯밤 직접 적기'])}</button>`}
+        </div>
+        ${ask ? `<div class="card"><h3>${L(['睡得怎么样？', '잘 잤어?'])} · ${fmtH((ask.end - ask.start) / 36e5)}</h3>
+          <div class="chips">${Q.map(([f, n]) => `<button class="chip ${quality === f ? 'is-on' : ''}" data-q="${f}"><img src="${face(f)}" alt="">${L(n)}</button>`).join('')}</div>
+          <button class="btn btn--main btn--wide" id="saveQ" style="margin-top:12px">${L(['交给侦查员', '수사관에게 제출'])}</button></div>` : ''}
+        ${manual ? `<div class="card"><h3>${L(['昨晚', '어젯밤'])} · ${dayKey(yday)}</h3>
+          <div class="row"><label class="grow">${L(['几点睡', '잔 시간'])}<input class="input" type="time" id="tBed" value="${tBed}"></label>
+          <label class="grow">${L(['几点醒', '깬 시간'])}<input class="input" type="time" id="tWake" value="${tWake}"></label></div>
+          <div class="chips" style="margin-top:10px">${Q.map(([f, n]) => `<button class="chip ${quality === f ? 'is-on' : ''}" data-q="${f}"><img src="${face(f)}" alt="">${L(n)}</button>`).join('')}</div>
+          <div class="row" style="margin-top:12px"><button class="btn btn--ghost" id="mCancel">${L(['取消', '취소'])}</button><button class="btn btn--main" id="mSave">${L(['登记', '등록'])}</button></div></div>` : ''}
+        <div class="card"><h3>${L(['最近 7 天 · 小时', '최근 7일 · 시간'])}</h3>
+          <div class="bars">${days.map(k => { const n = data.nights.find(x => x.d === k); const h = n ? dur(n) : 0; return `<div class="bars__col"><b style="font-size:11px;color:var(--deep)">${h ? h.toFixed(1) : ''}</b><div class="bars__bar" style="height:${Math.min(100, h / 10 * 100)}%;${h && h < 6 ? 'opacity:.45' : ''}"></div><span>${wd(k)}</span></div>`; }).join('')}</div>
+          <p class="muted" style="margin:6px 0 0">${L(['参考：大多数人每晚需要 7～9 小时', '참고: 대부분은 하룻밤 7~9시간이 필요해요'])}</p></div>
+        ${report()}
+        ${data.nights.length ? `<div class="card"><h3>${L(['睡眠档案', '수면 기록'])}</h3><ul class="list">${data.nights.slice(0, 10).map(n => `
+          <li class="item" data-id="${n.id}"><img src="${face(n.q)}" alt="" style="width:36px;height:36px;object-fit:contain"><span class="item__text"><b>${n.d.slice(5)}</b> · ${hm(n.start)} → ${hm(n.end)}<br><span class="muted">${fmtH(dur(n))}</span></span><button class="icon-btn" data-del aria-label="删除 / 삭제">×</button></li>`).join('')}</ul></div>` : ''}`;
+    }
+    main.addEventListener('input', e => { if (e.target.id === 'tBed') tBed = e.target.value; if (e.target.id === 'tWake') tWake = e.target.value; });
+    main.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.q) { quality = b.dataset.q; draw(); return; }
+      if (b.id === 'bed') { data.sleeping = { start: Date.now() }; save(data); draw(); say(NG.pick(NG.lines.sleeping), 'sleep'); return; }
+      if (b.id === 'cancel') { delete data.sleeping; save(data); draw(); say(['哼，取消了。', '흥, 취소했어.'], 'happy'); return; }
+      if (b.id === 'wake') {
+        const st = data.sleeping.start, en = Date.now();
+        delete data.sleeping; save(data);
+        if (en - st < 20 * 60000) { draw(); say(['才 20 分钟不到？这次就不记了。', '20분도 안 됐어? 이번엔 안 적을게.'], 'surprised'); return; }
+        ask = { start: st, end: en }; quality = 'happy'; draw(); say(['醒啦。睡得怎么样？', '일어났구나. 잘 잤어?'], 'happy', 'bounce'); return;
+      }
+      if (b.id === 'saveQ') { add(ask.start, ask.end, quality); ask = null; draw(); return; }
+      if (b.id === 'manual') { manual = true; quality = 'happy'; draw(); return; }
+      if (b.id === 'mCancel') { manual = false; draw(); return; }
+      if (b.id === 'mSave') {
+        const [bh, bm] = tBed.split(':').map(Number), [wh, wm] = tWake.split(':').map(Number);
+        const wake = new Date(); wake.setHours(wh, wm, 0, 0);
+        const bed = new Date(wake); bed.setHours(bh, bm, 0, 0); if (bed >= wake) bed.setDate(bed.getDate() - 1);
+        if (wake - bed > 16 * 36e5) { toast(['时间好像不对，检查一下？', '시간이 이상해. 확인해 줄래?']); return; }
+        manual = false; add(+bed, +wake, quality); draw(); return;
+      }
+      if (b.hasAttribute('data-del')) { const id = b.closest('[data-id]').dataset.id; data.nights = data.nights.filter(n => n.id !== id); save(data); draw(); }
+    });
+    draw();
+    if (data.sleeping) setTimeout(() => say(['还在睡眠中……醒了记得点「我醒了」。', '아직 자는 중… 일어나면 「일어났어」 눌러.'], 'sleep'), 2800);
+    return data.nights.length > 0 || !!data.sleeping;
+  }
+
   /* —— 启动 —— */
-  const run = { mood, todo: () => list('todo'), idea: () => list('idea'), habit, water, lend, focus, diary, feed }[mode];
+  const run = { mood, todo: () => list('todo'), idea: () => list('idea'), habit, water, lend, focus, diary, feed, sleep }[mode];
   const res = run();
   const has = typeof res === 'object' ? res.has : res;
   NG.introCards(data, () => {

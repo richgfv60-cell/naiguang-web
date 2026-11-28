@@ -310,6 +310,7 @@ const CHARACTERS = [
     name: { zh: '奶猫', ko: '우유 고양이' },
     role: { zh: '细节侦查员', ko: '세부 정찰병' },
     member: { zh: '岳耀森', ko: '악요삼', sid: '202323143' },
+    douyin: 'https://v.douyin.com/V6sT03OYo4c/',   /* 角色设计者的抖音 */
     tint: '#FBE3CB', deep: '#A0613F',
     palette: ['#FDF9E9', '#FAD7B6', '#EABFAA', '#BB9D8F', '#5B302D'],
     word: { zh: '傲娇', ko: '츤데레' },

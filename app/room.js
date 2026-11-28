@@ -8,7 +8,7 @@
   const T = (zh, ko) => [zh, ko];
   document.documentElement.style.setProperty('--tint', c.tint);
   document.documentElement.style.setProperty('--deep', c.deep);
-  const kindA = { feed: 'A', mood: 'A', diary: 'A', lend: 'A', water: 'B', habit: 'B', todo: 'C', idea: 'C', focus: 'C' };
+  const kindA = { sleep: 'B', feed: 'A', mood: 'A', diary: 'A', lend: 'A', water: 'B', habit: 'B', todo: 'C', idea: 'C', focus: 'C' };
   const kindB = { ice: 'E', hop: 'E', catch: 'E', match: 'E', whack: 'E', reaction: 'E', ball: 'F', fortune: 'F', quiz: 'F' };
   const KN = { A: T('记录', '기록'), B: T('习惯·健康', '습관·건강'), C: T('待办·专注', '할 일·집중'), E: T('游戏', '게임'), F: T('运势·测试', '운세·테스트') };
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
