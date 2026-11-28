@@ -8,7 +8,7 @@
   const { c, cfg, L, t, esc, load, save, dayKey, face, react, say, toast, sfx, pick } = NG;
   const G = NG.appCfg.game || cfg.game;
   const mode = NG.appCfg.mode;
-  const main = NG.shell({ mute: ['catch', 'whack', 'match', 'reaction', 'hop', 'ice'].includes(mode), small: true });
+  const main = NG.shell({ mute: ['catch', 'whack', 'match', 'reaction', 'hop', 'ice', 'snake'].includes(mode), small: true });
   const data = load();
   const T = (zh, ko) => [zh, ko];
   const style = document.createElement('style');
@@ -732,5 +732,114 @@
     build(); say(G.ready, 'happy', 'wave');
   }
 
-  ({ ball, fortune, quiz, match, reaction, whack, hop, ice, catch: catchGame })[mode]();
+  /* ===================================================== snake 小熊猫吃苹果（陶朝伟）
+     贪吃蛇：蛇头是奶小熊猫，身体是一串角色配色的圆球，吃苹果变长；撞墙或撞到自己结束 */
+  function snake() {
+    const COLS = 15, ROWS = 18;
+    const pal = (c.palette || [c.tint, c.deep]).slice(1, 4);
+    let cv, ctx, W, H, cell, dpr, timer = 0, raf = 0;
+    let body, dir, nextDir, apple, score, state = 'ready', eatFace = 0, speed;
+    const head = {};
+    ['happy', 'love', 'sad', 'surprised'].forEach(f => { const i = new Image(); i.src = face(f); head[f] = i; });
+    function draw() {
+      main.innerHTML = `
+        <div class="hud"><span>🍎 <b id="sc">0</b></span><span>${L(T('最佳', '최고'))} ${data.best || 0}</span></div>
+        <div class="playfield" id="pf" style="aspect-ratio:${COLS}/${ROWS};max-height:none;width:min(100%, calc(48vh * ${COLS} / ${ROWS}));margin:0 auto;background:#F3F9EC">
+          <canvas id="cv" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas>
+          <div class="overlay" id="ov"><h2>${L(NG.appCfg.name)}</h2><p>${L(G.ready)}</p>
+            <button class="btn btn--main btn--xl" id="go">${L(T('开始', '시작'))}</button></div>
+        </div>
+        <div class="pad" aria-label="方向 / 방향">
+          <button data-d="-1,0" aria-label="左 / 왼쪽">◀</button><button data-d="0,-1" aria-label="上 / 위">▲</button>
+          <button data-d="0,1" aria-label="下 / 아래">▼</button><button data-d="1,0" aria-label="右 / 오른쪽">▶</button>
+        </div>`;
+      cv = main.querySelector('#cv'); ctx = cv.getContext('2d'); size();
+    }
+    function size() { const r = cv.getBoundingClientRect(); dpr = Math.min(2, devicePixelRatio || 1); W = r.width; H = r.height; cell = W / COLS; cv.width = W * dpr; cv.height = H * dpr; }
+    function placeApple() {
+      const free = []; for (let x = 0; x < COLS; x++) for (let y = 0; y < ROWS; y++) if (!body.some(b => b.x === x && b.y === y)) free.push({ x, y });
+      apple = free[Math.floor(Math.random() * free.length)];
+    }
+    function reset() {
+      const y = Math.floor(ROWS / 2); body = [{ x: 5, y }, { x: 4, y }, { x: 3, y }];
+      dir = { x: 1, y: 0 }; nextDir = dir; score = 0; speed = 190; eatFace = 0; placeApple();
+      main.querySelector('#sc').textContent = 0;
+    }
+    function render() {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      for (let x = 0; x < COLS; x++) for (let y = 0; y < ROWS; y++) { ctx.fillStyle = (x + y) % 2 ? '#EAF4DF' : '#F3F9EC'; ctx.fillRect(x * cell, y * cell, cell, cell); }
+      if (apple) { ctx.font = `${cell * .9}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🍎', (apple.x + .5) * cell, (apple.y + .55) * cell); }
+      for (let i = body.length - 1; i >= 1; i--) {                         // 身体：一串小球，越往后越小
+        const b = body[i], r = cell * (.46 - Math.min(.16, i * .008)), cx = (b.x + .5) * cell, cy = (b.y + .5) * cell;
+        const g = ctx.createRadialGradient(cx - r * .35, cy - r * .35, r * .1, cx, cy, r);
+        g.addColorStop(0, '#fff'); g.addColorStop(.35, pal[i % pal.length]); g.addColorStop(1, pal[(i + 1) % pal.length]);
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = 'rgba(104,39,33,.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+      }
+      const h = body[0], im = head[state === 'over' ? 'sad' : eatFace > 0 ? 'love' : 'happy'];
+      if (im.complete && im.naturalWidth) {
+        const s = cell * 1.75, w = s * im.naturalWidth / im.naturalHeight, cx = (h.x + .5) * cell, cy = (h.y + .5) * cell;
+        ctx.save(); ctx.translate(cx, cy); if (dir.x < 0) ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -s * .6, w, s); ctx.restore();
+      }
+    }
+    function step() {
+      dir = nextDir;
+      const h = { x: body[0].x + dir.x, y: body[0].y + dir.y };
+      const hitWall = h.x < 0 || h.y < 0 || h.x >= COLS || h.y >= ROWS;
+      const grow = apple && h.x === apple.x && h.y === apple.y;
+      const hitSelf = body.slice(0, grow ? body.length : body.length - 1).some(b => b.x === h.x && b.y === h.y);
+      if (hitWall || hitSelf) return end();
+      body.unshift(h);
+      if (grow) {
+        score++; main.querySelector('#sc').textContent = score; eatFace = 4; sfx('good');
+        if (score % 3 === 1) say(pick(G.eat), 'love', 'bounce');
+        if (score % 5 === 0) { speed = Math.max(85, speed - 15); NG.celebrate(); }
+        placeApple();
+      } else body.pop();
+      if (eatFace > 0) eatFace--;
+      render();
+      timer = setTimeout(step, speed);
+    }
+    NG._snake = () => ({ head: body[0], apple, dir, state, score });
+    function turn(x, y) { if (state !== 'play') return; if (x === -dir.x && y === -dir.y) return; nextDir = { x, y }; }
+    function start() { main.querySelector('#ov').hidden = true; size(); reset(); state = 'play'; render(); say(T('出发！去找苹果 🍎', '출발! 사과 찾으러 🍎'), 'happy', 'bounce'); clearTimeout(timer); timer = setTimeout(step, 400); }
+    function end() {
+      state = 'over'; clearTimeout(timer); render(); sfx('bad');
+      const isBest = score > (data.best || 0); if (isBest) data.best = score; data.plays = (data.plays || 0) + 1; save(data);
+      say(pick(G.crash), 'sad', 'shake');
+      setTimeout(() => {
+        const ov = main.querySelector('#ov'); ov.hidden = false;
+        ov.innerHTML = `<h2>🍎 ${score}</h2><p>${L(endLine(score, 20, 8))}</p>${isBest && score ? `<p>🏆 ${L(T('新纪录', '신기록'))}</p>` : `<p class="muted">${L(T('最佳', '최고'))} ${data.best || 0}</p>`}
+          <button class="btn btn--main btn--xl" id="go">${L(T('再玩一次', '다시 하기'))}</button>`;
+        say(endLine(score, 20, 8), endFace(score, 20, 8), 'jump'); sfx('end');
+      }, 700);
+    }
+    function pause() { if (state !== 'play') return; state = 'paused'; clearTimeout(timer); const ov = main.querySelector('#ov'); ov.hidden = false; ov.innerHTML = `<h2>${L(T('暂停', '일시정지'))}</h2><button class="btn btn--main btn--xl" id="resume">${L(T('继续', '계속'))}</button>`; }
+    main.addEventListener('click', e => {
+      if (e.target.closest('#go')) return start();
+      if (e.target.closest('#resume')) { main.querySelector('#ov').hidden = true; state = 'play'; timer = setTimeout(step, 300); return; }
+      const d = e.target.closest('[data-d]'); if (d) { const [x, y] = d.dataset.d.split(',').map(Number); turn(x, y); }
+    });
+    let sx0 = null, sy0 = null;
+    main.addEventListener('pointerdown', e => { if (e.target.closest('#cv')) { sx0 = e.clientX; sy0 = e.clientY; } });
+    addEventListener('pointerup', e => {
+      if (sx0 == null) return; const dx = e.clientX - sx0, dy = e.clientY - sy0; sx0 = null;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return;
+      Math.abs(dx) > Math.abs(dy) ? turn(Math.sign(dx), 0) : turn(0, Math.sign(dy));
+    });
+    addEventListener('keydown', e => {
+      const m = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0], w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0] }[e.key];
+      if (m) { e.preventDefault(); turn(...m); }
+    });
+    addEventListener('resize', () => { if (cv) { size(); render(); } });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+    const st = document.createElement('style');
+    st.textContent = `.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:360px;margin:0 auto;width:100%}
+      .pad button{min-height:52px;border-radius:16px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08);font-size:20px;color:var(--deep)}
+      .pad button:active{transform:scale(.94);background:var(--tint)}`;
+    document.head.appendChild(st);
+    draw(); reset(); render(); say(G.ready, 'happy', 'wave');
+  }
+
+  ({ ball, fortune, quiz, match, reaction, whack, hop, ice, snake, catch: catchGame })[mode]();
 })();
